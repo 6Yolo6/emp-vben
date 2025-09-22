@@ -1,0 +1,57 @@
+name: EMP Simple CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # 基础检查任务
+  basic-check:
+    runs-on: ubuntu-latest
+    name: 基础代码检查
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 检查Maven项目是否能正常编译
+      - name: Maven编译检查
+        run: |
+          if [ -f "pom.xml" ]; then
+            mvn clean compile
+          else
+            echo "暂无Maven项目，跳过编译检查"
+          fi
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 检查前端项目是否能正常安装依赖
+      - name: 前端依赖检查
+        run: |
+          if [ -d "emp-web" ] && [ -f "emp-web/package.json" ]; then
+            cd emp-web
+            npm ci
+            npm run build
+          else
+            echo "暂无前端项目，跳过检查"
+          fi
+
+      # 检查Docker配置是否正确
+      - name: Docker配置检查
+        run: |
+          if [ -f "docker-compose.yml" ]; then
+            docker-compose config
+          else
+            echo "暂无Docker配置，跳过检查"
+          fi
