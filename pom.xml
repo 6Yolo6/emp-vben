@@ -2,83 +2,222 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.6</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+
+	<!-- 父工程坐标 -->
 	<groupId>com.ldjt.emp</groupId>
 	<artifactId>emp-platform</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
 	<name>emp-platform</name>
 	<description>Enterprise Management Platform</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
+	<!-- 子模块列表 -->
+	<modules>
+		<module>emp-common</module>
+		<module>emp-framework</module>
+		<module>emp-gateway</module>
+		<module>emp-auth</module>
+		<module>emp-system</module>
+		<module>emp-business</module>
+		<module>emp-api</module>
+	</modules>
+
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+		<!-- 主要框架版本 -->
+		<spring-boot.version>3.2.9</spring-boot.version>
+		<spring-cloud-alibaba.version>2023.0.3.3</spring-cloud-alibaba.version>
+		<!-- 数据库版本 -->
+		<postgresql.version>42.7.7</postgresql.version>
+		<HikariCP.version>5.0.1</HikariCP.version>
+		<mybatis-flex.version>1.11.3</mybatis-flex.version>
+		<!-- 权限验证版本 -->
+		<sa-token-spring-boot3-starter.version>1.44.0</sa-token-spring-boot3-starter.version>
+		<sa-token-dao-redis-jackson.version>1.9.0</sa-token-dao-redis-jackson.version>
+		<!-- Redis连接池 -->
+		<commons-pool2.version>2.11.1</commons-pool2.version>
+		<!-- 工具库版本 -->
+		<hutool.version>5.8.22</hutool.version>
+		<fastjson.version>2.0.43</fastjson.version>
+		<lombok.version>1.18.30</lombok.version>
+		<!-- plugin版本 -->
+		<spring-boot-configuration-processor.version>${spring-boot.version}</spring-boot-configuration-processor.version>
 	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<!-- 依赖版本管理 - 统一管理所有子模块的依赖版本 -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- 主要框架 -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<!-- 已包含Spring Cloud核心组件 -->
+				<groupId>com.alibaba.cloud</groupId>
+				<artifactId>spring-cloud-alibaba-dependencies</artifactId>
+				<version>${spring-cloud-alibaba.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
+			<!-- 数据库相关 -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.zaxxer</groupId>
+				<artifactId>HikariCP</artifactId>
+				<version>${HikariCP.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mybatis-flex</groupId>
+				<artifactId>mybatis-flex-dependencies</artifactId>
+				<version>${mybatis-flex.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- 权限认证相关 -->
+			<dependency>
+				<!-- Sa-Token 权限认证，在线文档：https://sa-token.cc -->
+				<!-- https://sa-token.cc/doc.html#/micro/import-intro -->
+				<groupId>cn.dev33</groupId>
+				<artifactId>sa-token-spring-boot3-starter</artifactId>
+				<version>${sa-token-spring-boot3-starter.version}</version>
+			</dependency>
+			<dependency>
+				<!-- Sa-Token的Redis存储实现 -->
+				<groupId>cn.dev33</groupId>
+				<artifactId>sa-token-dao-redis-jackson</artifactId>
+				<version>${sa-token-dao-redis-jackson.version}</version>
+			</dependency>
+
+			<!-- Redis连接池 -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-pool2</artifactId>
+				<version>${commons-pool2.version}</version>
+			</dependency>
+
+			<!-- 工具库 -->
+			<dependency>
+				<groupId>cn.hutool</groupId>
+				<artifactId>hutool-all</artifactId>
+				<version>${hutool.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson2</artifactId>
+				<version>${fastjson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-devtools</artifactId>
+				<version>${spring-boot.version}</version>
+				<scope>runtime</scope>
+				<optional>true</optional>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-configuration-processor</artifactId>
+				<version>${spring-boot.version}</version>
+				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-test</artifactId>
+				<version>${spring-boot.version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- 父工程公共插件配置 -->
 	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- 编译插件 - 定义配置 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven-compiler-plugin.version}</version>
+					<configuration>
+						<source>17</source>
+						<target>17</target>
+						<encoding>UTF-8</encoding>
+						<parameters>true</parameters>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.springframework.boot</groupId>
+								<artifactId>spring-boot-configuration-processor</artifactId>
+								<version>${spring-boot-configuration-processor.version}</version>
+							</path>
+							<path>
+								<groupId>com.mybatis-flex</groupId>
+								<artifactId>mybatis-flex-processor</artifactId>
+								<version>${mybatis-flex.version}</version>
+							</path>
+							<!-- 添加Lombok处理器路径 -->
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>${lombok.version}</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+
+				<!-- Spring Boot插件 - 定义配置，但不执行 -->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+					<configuration>
+						<excludes>
+							<exclude>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+							</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
+
+				<!-- 测试插件 -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.5.4</version>
+					<configuration>
+						<skipTests>false</skipTests>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<!-- 所有模块都需要的插件 -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.springframework.boot</groupId>
-							<artifactId>spring-boot-configuration-processor</artifactId>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<!-- 版本和配置从pluginManagement继承 -->
 			</plugin>
 		</plugins>
 	</build>
