@@ -15,19 +15,61 @@ spring:
     restart:
       enabled: true
 
-  # PostgreSQL数据源配置
+  # PostgreSQL数据源配置（多数据源）
   datasource:
-    url: jdbc:postgresql://localhost:5432/emp_dev
-    username: postgres
-    password: Root@123
-    driver-class-name: org.postgresql.Driver
-
-    # HikariCP连接池配置
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      idle-timeout: 300000
-      connection-timeout: 20000
+    # Druid数据源配置
+    druid:
+      # 主数据源（写库）
+      master:
+        url: jdbc:postgresql://localhost:5432/emp_dev
+        username: postgres
+        password: Root@123
+        driver-class-name: org.postgresql.Driver
+        # 连接池配置
+        initial-size: 5
+        min-idle: 5
+        max-active: 20
+        max-wait: 60000
+        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        time-between-eviction-runs-millis: 60000
+        # 配置一个连接在池中最小生存的时间，单位是毫秒
+        min-evictable-idle-time-millis: 300000
+        # 验证连接有效性的SQL
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        # 打开PSCache，并且指定每个连接上PSCache的大小
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+        filters: stat,wall
+        # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+        connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        # 合并多个DruidDataSource的监控数据
+        use-global-data-source-stat: true
+      
+      # 从数据源（读库）- 暂时使用相同配置，后续可配置为只读副本
+      slave:
+        url: jdbc:postgresql://localhost:5432/emp_dev
+        username: postgres
+        password: Root@123
+        driver-class-name: org.postgresql.Driver
+        initial-size: 5
+        min-idle: 5
+        max-active: 20
+        max-wait: 60000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        filters: stat,wall
+        connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        use-global-data-source-stat: true
 
   # Redis配置
   data:
@@ -43,6 +85,28 @@ spring:
           max-wait: -1ms
           max-idle: 8
           min-idle: 0
+  
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000  # 默认缓存过期时间（毫秒）
+      cache-null-values: true  # 是否缓存空值
+      key-prefix: "emp:cache:"  # 缓存key前缀
+      use-key-prefix: true
+
+# Redisson配置
+redisson:
+  # 单机模式
+  single-server-config:
+    address: "redis://localhost:6379"
+#    password:
+    database: 0
+    connection-pool-size: 64
+    connection-minimum-idle-size: 10
+    idle-connection-timeout: 10000
+    timeout: 3000
+    connect-timeout: 10000
 
   # Nacos配置（暂时禁用，等Docker环境启动后再启用）
   cloud:

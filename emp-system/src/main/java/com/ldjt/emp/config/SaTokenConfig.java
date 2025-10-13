@@ -9,19 +9,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Sa-Token配置类
- * 
+ *
  * @author emp
  */
 @Configuration
 public class SaTokenConfig implements WebMvcConfigurer {
-    
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册Sa-Token拦截器
         registry.addInterceptor(new SaInterceptor(handle -> {
             // 指定需要拦截的路径
             SaRouter.match("/**")
-                // 排除不需要登录的接口
+                // 排除接口
                 .notMatch(
                     "/auth/login",           // 登录接口
                     "/auth/logout",          // 登出接口

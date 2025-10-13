@@ -1,15 +1,13 @@
 package com.ldjt.emp.codegen;
 
 import com.mybatisflex.codegen.Generator;
-import com.mybatisflex.codegen.config.ColumnConfig;
 import com.mybatisflex.codegen.config.GlobalConfig;
-import com.mybatisflex.codegen.config.StrategyConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * 生成系统管理模块代码
  * 包括：用户、角色、菜单、部门管理
- * 
+ *
  * @author emp
  */
 public class GenerateSystemModule {
@@ -24,38 +22,34 @@ public class GenerateSystemModule {
         // 创建全局配置
         GlobalConfig globalConfig = createGlobalConfig();
 
-        // 创建策略配置
-        StrategyConfig strategyConfig = new StrategyConfig();
-        
         // 指定要生成的表
-        strategyConfig.setGenerateTable(
+        globalConfig.getStrategyConfig().setGenerateTable(
             "sys_user",    // 用户表
             "sys_role",    // 角色表
             "sys_menu",    // 菜单表
             "sys_dept",    // 部门表
             "sys_post"     // 岗位表
         );
-        
+
         // 设置表前缀
-        strategyConfig.setTablePrefix("sys_");
-        
+        globalConfig.getStrategyConfig().setTablePrefix("sys_");
+
         // 忽略BaseEntity中的字段
-        strategyConfig.setIgnoreColumns(
+        globalConfig.getStrategyConfig().setIgnoreColumns(
             "create_by",
             "create_time",
             "update_by",
-            "update_time"
+            "update_time",
+            "deleted"
         );
-        
+
         // 设置逻辑删除字段
-        strategyConfig.setLogicDeleteColumn("deleted");
-        
-        globalConfig.setStrategyConfig(strategyConfig);
+        globalConfig.getStrategyConfig().setLogicDeleteColumn("deleted");
 
         // 创建生成器并生成代码
         Generator generator = new Generator(dataSource, globalConfig);
         generator.generate();
-        
+
         System.out.println("代码生成完成！");
         System.out.println("生成的文件位置：");
         System.out.println("  - Entity: emp-system/src/main/java/com/ldjt/emp/entity/");
@@ -72,24 +66,24 @@ public class GenerateSystemModule {
         GlobalConfig globalConfig = new GlobalConfig();
 
         // 基础配置
-        globalConfig.setAuthor("emp");
-        globalConfig.setBasePackage("com.ldjt.emp");
+        globalConfig.getJavadocConfig().setAuthor("emp");
+        globalConfig.getPackageConfig().setBasePackage("com.ldjt.emp");
 
         // 生成路径配置
         String projectPath = System.getProperty("user.dir");
         globalConfig.setSourceDir(projectPath + "/emp-system/src/main/java");
         globalConfig.setMapperXmlPath(projectPath + "/emp-system/src/main/resources/mapper");
 
-        // Entity配置
+        // Entity配置 - 使用OpenAPI 3.0注解
         globalConfig.setEntityGenerateEnable(true);
         globalConfig.setEntityWithLombok(true);
-        globalConfig.setEntityWithSwagger(true);
+        globalConfig.getEntityConfig().setWithSwagger(true);
+//        globalConfig.getEntityConfig().setSwaggerVersion(GlobalConfig.SwaggerVersion.FOX);
         globalConfig.setEntitySuperClass(com.ldjt.emp.common.core.domain.BaseEntity.class);
-        globalConfig.setEntityJdkVersion(17);
 
         // Mapper配置
         globalConfig.setMapperGenerateEnable(true);
-        globalConfig.setMapperAnnotation(true);
+        globalConfig.getMapperConfig().setMapperAnnotation(true);
 
         // Service配置
         globalConfig.setServiceGenerateEnable(true);
@@ -97,19 +91,13 @@ public class GenerateSystemModule {
 
         // Controller配置
         globalConfig.setControllerGenerateEnable(true);
-        globalConfig.setControllerRestStyle(true);
+        globalConfig.getControllerConfig().setRestStyle(true);
 
         // TableDef配置
         globalConfig.setTableDefGenerateEnable(true);
 
         // MapperXml配置
         globalConfig.setMapperXmlGenerateEnable(true);
-
-        // 配置需要忽略的字段（BaseEntity中已有）
-        globalConfig.setColumnConfig("create_by", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("create_time", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("update_by", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("update_time", new ColumnConfig().setIgnore(true));
 
         return globalConfig;
     }

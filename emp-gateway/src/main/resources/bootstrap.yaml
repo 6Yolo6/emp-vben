@@ -1,0 +1,16 @@
+# Bootstrap配置文件
+spring:
+  application:
+    name: emp-gateway
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos
+      config:
+        enabled: false
+        namespace: dev
+        group: DEFAULT_GROUP
+        file-extension: yaml

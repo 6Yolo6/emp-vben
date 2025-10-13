@@ -1,0 +1,110 @@
+# 服务器配置
+server:
+  port: 8888
+
+# 应用配置
+spring:
+  application:
+    name: emp-gateway
+
+  profiles:
+    active: dev
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+#      password:
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+  # Nacos配置（暂时禁用）
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos
+      discovery:
+        enabled: false
+        namespace: dev
+        group: DEFAULT_GROUP
+        service: ${spring.application.name}
+      config:
+        enabled: false
+        namespace: dev
+        group: DEFAULT_GROUP
+        file-extension: yaml
+
+    # Gateway配置
+    gateway:
+      # 路由配置
+      routes:
+        # 系统服务路由
+        - id: emp-system
+          uri: lb://emp-system
+          predicates:
+            - Path=/system/**
+          filters:
+            - StripPrefix=1
+
+        # 认证服务路由
+        - id: emp-auth
+          uri: lb://emp-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+
+        # 业务服务路由
+        - id: emp-business
+          uri: lb://emp-business
+          predicates:
+            - Path=/business/**
+          filters:
+            - StripPrefix=1
+
+      # 全局跨域配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+      # 默认过滤器
+      default-filters:
+        # 限流过滤器
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 10  # 令牌桶每秒填充平均速率
+            redis-rate-limiter.burstCapacity: 20  # 令牌桶总容量
+            key-resolver: "#{@ipKeyResolver}"
+
+# Sa-Token配置
+sa-token:
+  token-name: Authorization
+  timeout: 2592000
+  active-timeout: 1800
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-log: false
+  is-read-cookie: false
+  is-read-header: true
+  token-prefix: "Bearer"
+
+# 日志配置
+logging:
+  level:
+    com.ldjt.emp: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

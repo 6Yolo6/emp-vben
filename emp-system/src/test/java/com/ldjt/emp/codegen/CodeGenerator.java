@@ -1,13 +1,13 @@
 package com.ldjt.emp.codegen;
 
+import com.ldjt.emp.common.core.domain.BaseEntity;
 import com.mybatisflex.codegen.Generator;
-import com.mybatisflex.codegen.config.ColumnConfig;
 import com.mybatisflex.codegen.config.GlobalConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * MyBatis-Flex代码生成器
- * 
+ *
  * @author emp
  */
 public class CodeGenerator {
@@ -37,24 +37,34 @@ public class CodeGenerator {
         GlobalConfig globalConfig = new GlobalConfig();
 
         // 设置根包
-        globalConfig.setBasePackage("com.ldjt.emp");
+        globalConfig.getPackageConfig().setBasePackage("com.ldjt.emp");
 
         // 设置表前缀，生成实体类时会去掉前缀
-        globalConfig.setTablePrefix("sys_", "wf_");
+        globalConfig.getStrategyConfig().setTablePrefix("sys_", "wf_");
+
+        // 忽略BaseEntity中的字段
+        globalConfig.getStrategyConfig().setIgnoreColumns(
+            "create_by",
+            "create_time",
+            "update_by",
+            "update_time",
+            "deleted"
+        );
 
         // 设置生成路径
+        globalConfig.getJavadocConfig().setAuthor("emp");
         globalConfig.setSourceDir(System.getProperty("user.dir") + "/emp-system/src/main/java");
         globalConfig.setMapperXmlPath(System.getProperty("user.dir") + "/emp-system/src/main/resources/mapper");
 
         // Entity配置
         globalConfig.setEntityGenerateEnable(true);
         globalConfig.setEntityWithLombok(true);
-        globalConfig.setEntityWithSwagger(true);
-        globalConfig.setEntitySuperClass(com.ldjt.emp.common.core.domain.BaseEntity.class);
+        globalConfig.setEntityWithSwagger(false);  // 暂时禁用Swagger注解，避免生成旧版注解
+        globalConfig.setEntitySuperClass(BaseEntity.class);
 
         // Mapper配置
         globalConfig.setMapperGenerateEnable(true);
-        globalConfig.setMapperAnnotation(true);
+        globalConfig.getMapperConfig().setMapperAnnotation(true);
 
         // Service配置
         globalConfig.setServiceGenerateEnable(true);
@@ -62,7 +72,7 @@ public class CodeGenerator {
 
         // Controller配置
         globalConfig.setControllerGenerateEnable(true);
-        globalConfig.setControllerRestStyle(true);
+        globalConfig.getControllerConfig().setRestStyle(true);
 
         // TableDef配置
         globalConfig.setTableDefGenerateEnable(true);
@@ -70,17 +80,8 @@ public class CodeGenerator {
         // MapperXml配置
         globalConfig.setMapperXmlGenerateEnable(true);
 
-        // 配置需要忽略的字段（BaseEntity中已有）
-        globalConfig.setColumnConfig("create_by", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("create_time", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("update_by", new ColumnConfig().setIgnore(true));
-        globalConfig.setColumnConfig("update_time", new ColumnConfig().setIgnore(true));
-
-        // 设置作者
-        globalConfig.setAuthor("emp");
-
         // 设置生成策略
-        globalConfig.setGenerateForView(false);
+        globalConfig.getStrategyConfig().setGenerateForView(false);
 
         return globalConfig;
     }
