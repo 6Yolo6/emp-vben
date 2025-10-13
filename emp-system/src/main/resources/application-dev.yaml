@@ -1,0 +1,32 @@
+# 开发环境配置
+spring:
+  # PostgreSQL数据源配置
+  datasource:
+    url: jdbc:postgresql://localhost:5432/emp_dev
+    username: postgres
+    password: Root@123
+    driver-class-name: org.postgresql.Driver
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+#      password:
+      database: 0
+
+  # Nacos配置（开发环境禁用）
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+# 日志配置
+logging:
+  level:
+    com.ldjt.emp: debug
+    com.mybatisflex: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

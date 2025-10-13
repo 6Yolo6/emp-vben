@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 15.4 数据库
+  postgres:
+    image: postgres:15.4
+    container_name: emp-postgres
+    environment:
+      POSTGRES_DB: emp_dev
+      POSTGRES_USER: emp
+      POSTGRES_PASSWORD: emp123456
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres/data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sql/emp_core_tables.sql:/docker-entrypoint-initdb.d/emp_core_tables.sql
+      - ./sql/emp_core_data.sql:/docker-entrypoint-initdb.d/emp_core_data.sql
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "wal_level=replica"
+    networks:
+      - emp-network
+    restart: unless-stopped
+
+  # Redis 7.0 缓存
+  redis:
+    image: redis:7.0
+    container_name: emp-redis
+    command: redis-server --requirepass emp123456 --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis/data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - emp-network
+    restart: unless-stopped
+
+  # Nacos 2.2.3 配置中心和服务发现
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: emp-nacos
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: postgres
+      POSTGRES_SERVICE_HOST: postgres
+      POSTGRES_SERVICE_PORT: 5432
+      POSTGRES_SERVICE_DB_NAME: emp_dev
+      POSTGRES_SERVICE_USER: emp
+      POSTGRES_SERVICE_PASSWORD: emp123456
+      POSTGRES_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=10000&socketTimeout=30000&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai
+      JVM_XMS: 512m
+      JVM_XMX: 512m
+      JVM_XMN: 256m
+      TZ: Asia/Shanghai
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    volumes:
+      - ./docker/nacos/logs:/home/nacos/logs
+      - ./docker/nacos/data:/home/nacos/data
+    networks:
+      - emp-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  emp-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  nacos-logs:
+  nacos-data:

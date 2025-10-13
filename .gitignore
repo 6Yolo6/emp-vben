@@ -61,3 +61,27 @@ build/
 # 这个是VS Code一个本地文件历史版本管理插件的
 .history/
 
+
+# Docker volumes
+docker/postgres/data/
+docker/redis/data/
+docker/nacos/logs/
+docker/nacos/data/
+
+# Logs
+logs/
+log/
+
+# Application local config
+application-local.yml
+application-local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib

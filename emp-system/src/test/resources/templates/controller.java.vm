@@ -1,0 +1,66 @@
+package ${packageConfig.controllerPackage};
+
+import com.ldjt.emp.common.core.domain.Result;
+import ${packageConfig.entityPackage}.${entity};
+import ${packageConfig.servicePackage}.${table.buildServiceName()};
+import com.mybatisflex.core.paginate.Page;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * ${table.comment} 控制器
+ *
+ * @author ${javadocConfig.author}
+ * @since ${javadocConfig.since}
+ */
+@Slf4j
+@RestController
+@RequestMapping("/${table.buildEntityName()}")
+@Tag(name = "${table.comment}管理", description = "${table.comment}的增删改查接口")
+public class ${controllerName} {
+
+    @Autowired
+    private ${table.buildServiceName()} ${table.buildServiceName()?uncap_first};
+
+    @GetMapping("/page")
+    @Operation(summary = "分页查询${table.comment}", description = "分页查询${table.comment}列表")
+    public Result<Page<${entity}>> page(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNumber,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<${entity}> page = ${table.buildServiceName()?uncap_first}.page(new Page<>(pageNumber, pageSize));
+        return Result.success(page);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "根据ID查询${table.comment}", description = "根据ID查询${table.comment}详情")
+    public Result<${entity}> getById(@Parameter(description = "${table.comment}ID") @PathVariable Long id) {
+        ${entity} entity = ${table.buildServiceName()?uncap_first}.getById(id);
+        return Result.success(entity);
+    }
+
+    @PostMapping
+    @Operation(summary = "新增${table.comment}", description = "新增${table.comment}")
+    public Result<Boolean> save(@Valid @RequestBody ${entity} entity) {
+        boolean result = ${table.buildServiceName()?uncap_first}.save(entity);
+        return Result.success(result);
+    }
+
+    @PutMapping
+    @Operation(summary = "更新${table.comment}", description = "更新${table.comment}")
+    public Result<Boolean> update(@Valid @RequestBody ${entity} entity) {
+        boolean result = ${table.buildServiceName()?uncap_first}.updateById(entity);
+        return Result.success(result);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除${table.comment}", description = "根据ID删除${table.comment}")
+    public Result<Boolean> remove(@Parameter(description = "${table.comment}ID") @PathVariable Long id) {
+        boolean result = ${table.buildServiceName()?uncap_first}.removeById(id);
+        return Result.success(result);
+    }
+}

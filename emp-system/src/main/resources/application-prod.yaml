@@ -1,0 +1,39 @@
+# 生产环境配置
+spring:
+  # PostgreSQL数据源配置（生产环境使用环境变量）
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/emp_prod}
+    username: ${SPRING_DATASOURCE_USERNAME:emp}
+    password: ${SPRING_DATASOURCE_PASSWORD:emp123456}
+    driver-class-name: org.postgresql.Driver
+
+  # Redis配置（生产环境使用环境变量）
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:emp123456}
+      database: 0
+
+  # Nacos配置（生产环境启用）
+  cloud:
+    nacos:
+      server-addr: ${SPRING_CLOUD_NACOS_SERVER_ADDR:localhost:8848}
+      username: ${SPRING_CLOUD_NACOS_USERNAME:nacos}
+      password: ${SPRING_CLOUD_NACOS_PASSWORD:nacos}
+      discovery:
+        enabled: true
+        namespace: prod
+      config:
+        enabled: true
+        namespace: prod
+
+# 日志配置
+logging:
+  level:
+    com.ldjt.emp: info
+    com.mybatisflex: warn
+  file:
+    name: /var/log/emp/emp-system.log
+    max-size: 100MB
+    max-history: 30

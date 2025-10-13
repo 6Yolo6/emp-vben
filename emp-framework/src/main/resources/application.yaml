@@ -1,0 +1,67 @@
+# emp-framework框架核心模块配置
+
+spring:
+  # Redis配置
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 200
+          max-idle: 20
+          min-idle: 5
+          max-wait: 10000ms
+
+# MyBatis-Flex配置
+mybatis-flex:
+  # 配置文件位置
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 开启二级缓存
+    cache-enabled: true
+    # 懒加载
+    lazy-loading-enabled: true
+    # 积极懒加载
+    aggressive-lazy-loading: false
+    # 打印SQL
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  # 全局配置
+  global-config:
+    # 逻辑删除字段
+    logic-delete-column: deleted
+    # 逻辑删除值
+    logic-delete-value: 1
+    # 逻辑未删除值
+    logic-not-delete-value: 0
+    # 主键类型
+    key-type: snowflake_id
+
+# Sa-Token配置
+sa-token:
+  # Token名称
+  token-name: Authorization
+  # Token有效期（单位：秒）默认30天
+  timeout: 2592000
+  # Token临时有效期（指定时间内无操作就视为token过期）单位：秒，默认30分钟
+  activity-timeout: 1800
+  # 是否允许同一账号并发登录
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个token
+  is-share: false
+  # Token风格
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: false
+  # 是否从cookie中读取token
+  is-read-cookie: false
+  # 是否从请求体中读取token
+  is-read-body: false
+  # 是否从header中读取token
+  is-read-header: true
+  # token前缀
+  token-prefix: Bearer

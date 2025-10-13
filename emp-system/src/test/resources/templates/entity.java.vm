@@ -1,0 +1,42 @@
+package ${packageConfig.entityPackage};
+
+#foreach($importClass in $table.importClasses)
+import $importClass;
+#end
+import com.ldjt.emp.common.core.domain.BaseEntity;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * ${table.comment} 实体类
+ *
+ * @author ${javadocConfig.author}
+ * @since ${javadocConfig.since}
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Table("${table.name}")
+@Schema(description = "${table.comment}")
+public class ${entity} extends BaseEntity {
+
+#foreach($column in $table.columns)
+#if(!$column.ignore)
+    /**
+     * ${column.comment}
+     */
+#if($column.primaryKey)
+    @Id(keyType = KeyType.Auto)
+#end
+#if($column.logicDelete)
+    @Column(isLogicDelete = true)
+#end
+    @Schema(description = "${column.comment}")
+    private ${column.propertySimpleType} ${column.property};
+
+#end
+#end
+}

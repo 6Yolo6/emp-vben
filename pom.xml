@@ -38,13 +38,21 @@
         <mybatis-flex.version>1.11.3</mybatis-flex.version>
         <!-- 权限验证版本 -->
         <sa-token-spring-boot3-starter.version>1.44.0</sa-token-spring-boot3-starter.version>
-        <sa-token-dao-redis-jackson.version>1.9.0</sa-token-dao-redis-jackson.version>
         <!-- Redis连接池 -->
         <commons-pool2.version>2.11.1</commons-pool2.version>
         <!-- 工具库版本 -->
         <hutool.version>5.8.22</hutool.version>
         <fastjson.version>2.0.43</fastjson.version>
         <lombok.version>1.18.30</lombok.version>
+        <!-- API文档版本 -->
+        <knife4j.version>4.5.0</knife4j.version>
+        <!-- 工作流版本 -->
+        <flowable.version>7.0.1</flowable.version>
+        <!-- 其他工具版本 -->
+        <redisson.version>3.27.2</redisson.version>
+        <druid.version>1.2.23</druid.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <!-- plugin版本 -->
         <spring-boot-configuration-processor.version>${spring-boot.version}</spring-boot-configuration-processor.version>
     </properties>
@@ -106,8 +114,14 @@
             <dependency>
                 <!-- Sa-Token的Redis存储实现 -->
                 <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-redis-jackson</artifactId>
+                <version>${sa-token-spring-boot3-starter.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Sa-Token整合Redis（使用jackson序列化方式） -->
+                <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-dao-redis-jackson</artifactId>
-                <version>${sa-token-dao-redis-jackson.version}</version>
+                <version>${sa-token-spring-boot3-starter.version}</version>
             </dependency>
 
             <!-- Redis连接池 -->
@@ -132,6 +146,49 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- API文档 - Knife4j（兼容 Spring Boot 3.2.x） -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+
+            <!-- 工作流引擎 -->
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-boot-starter</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
+
+            <!-- Redisson分布式锁 -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+
+            <!-- Druid数据源 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid-spring-boot-3-starter</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+
+            <!-- Jakarta Validation -->
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation.version}</version>
+            </dependency>
+
+            <!-- Jakarta Servlet -->
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
