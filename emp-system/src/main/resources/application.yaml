@@ -48,10 +48,10 @@ spring:
         connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
         # 合并多个DruidDataSource的监控数据
         use-global-data-source-stat: true
-      
+
       # 从数据源（读库）- 暂时使用相同配置，后续可配置为只读副本
       slave:
-        url: jdbc:postgresql://localhost:5432/emp_dev
+        url: jdbc:postgresql://localhost:5432/emp_dev_clone
         username: postgres
         password: Root@123
         driver-class-name: org.postgresql.Driver
@@ -85,7 +85,7 @@ spring:
           max-wait: -1ms
           max-idle: 8
           min-idle: 0
-  
+
   # 缓存配置
   cache:
     type: redis

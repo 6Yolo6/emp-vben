@@ -1,0 +1,91 @@
+# 服务器配置
+server:
+  port: 8081
+
+# 应用配置
+spring:
+  application:
+    name: emp-auth
+
+  profiles:
+    active: dev
+
+  # PostgreSQL数据源配置（简单配置，不使用多数据源）
+  datasource:
+    url: jdbc:postgresql://localhost:5432/emp_dev
+    username: postgres
+    password: Root@123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      #      password:
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+  # Nacos配置（暂时禁用）
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos
+      discovery:
+        enabled: false
+        namespace: dev
+        group: DEFAULT_GROUP
+        service: ${spring.application.name}
+      config:
+        enabled: false
+        namespace: dev
+        group: DEFAULT_GROUP
+        file-extension: yaml
+
+# Sa-Token配置
+sa-token:
+  token-name: Authorization
+  timeout: 2592000
+  active-timeout: 1800
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-log: false
+  is-read-cookie: false
+  is-read-header: true
+  token-prefix: "Bearer"
+
+# MyBatis-Flex配置
+mybatis-flex:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    logic-delete-column: deleted
+    logic-delete-value: 1
+    logic-normal-value: 0
+
+# Knife4j配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# 日志配置
+logging:
+  level:
+    com.ldjt.emp: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

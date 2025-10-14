@@ -79,13 +79,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL驱动（测试用） -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Druid 数据源和监控 -->
         <dependency>
             <groupId>com.alibaba</groupId>
