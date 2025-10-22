@@ -1,5 +1,8 @@
 package com.ldjt.emp.framework.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import com.ldjt.emp.common.core.domain.Result;
 import com.ldjt.emp.common.exception.BusinessException;
 import jakarta.validation.ConstraintViolation;
@@ -23,6 +26,59 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    /**
+     * Sa-Token 未登录异常处理
+     */
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Result<?> handleNotLoginException(NotLoginException e) {
+        String message;
+        switch (e.getType()) {
+            case NotLoginException.NOT_TOKEN:
+                message = "未提供token";
+                break;
+            case NotLoginException.INVALID_TOKEN:
+                message = "token无效";
+                break;
+            case NotLoginException.TOKEN_TIMEOUT:
+                message = "token已过期";
+                break;
+            case NotLoginException.BE_REPLACED:
+                message = "token已被顶下线";
+                break;
+            case NotLoginException.KICK_OUT:
+                message = "token已被踢下线";
+                break;
+            case NotLoginException.TOKEN_FREEZE:
+                message = "token已被冻结";
+                break;
+            default:
+                message = "未登录或登录已过期";
+        }
+        log.warn("未登录异常：{} - {}", message, e.getMessage());
+        return Result.error(401, message);
+    }
+
+    /**
+     * Sa-Token 权限不足异常处理
+     */
+    @ExceptionHandler(NotPermissionException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Result<?> handleNotPermissionException(NotPermissionException e) {
+        log.warn("权限不足异常：{}", e.getMessage());
+        return Result.error(403, "权限不足：" + e.getPermission());
+    }
+
+    /**
+     * Sa-Token 角色不足异常处理
+     */
+    @ExceptionHandler(NotRoleException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Result<?> handleNotRoleException(NotRoleException e) {
+        log.warn("角色不足异常：{}", e.getMessage());
+        return Result.error(403, "角色不足：" + e.getRole());
+    }
 
     /**
      * 业务异常处理

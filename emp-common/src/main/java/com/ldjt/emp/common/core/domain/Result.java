@@ -36,6 +36,12 @@ public class Result<T> implements Serializable {
     private T data;
 
     /**
+     * 是否成功
+     */
+    @Schema(description = "是否成功")
+    private Boolean success;
+
+    /**
      * 时间戳
      */
     @Schema(description = "时间戳")
@@ -51,6 +57,7 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> success(T data) {
         Result<T> result = new Result<>();
         result.setCode(200);
+        result.setSuccess(true);
         result.setMessage("success");
         result.setData(data);
         result.setTimestamp(System.currentTimeMillis());
@@ -78,6 +85,7 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> success(String message, T data) {
         Result<T> result = new Result<>();
         result.setCode(200);
+        result.setSuccess(true);
         result.setMessage(message);
         result.setData(data);
         result.setTimestamp(System.currentTimeMillis());
@@ -95,6 +103,7 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> error(Integer code, String message) {
         Result<T> result = new Result<>();
         result.setCode(code);
+        result.setSuccess(false);
         result.setMessage(message);
         result.setTimestamp(System.currentTimeMillis());
         return result;
@@ -117,6 +126,6 @@ public class Result<T> implements Serializable {
      * @return 是否成功
      */
     public boolean isSuccess() {
-        return this.code != null && this.code == 200;
+        return this.success != null && this.success;
     }
 }

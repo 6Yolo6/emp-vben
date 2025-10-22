@@ -24,23 +24,19 @@ public class AuditFieldHandler implements InsertListener, UpdateListener {
         if (entity instanceof BaseEntity) {
             BaseEntity baseEntity = (BaseEntity) entity;
             Long userId = SecurityUtils.getUserId();
+            // 如果未登录，使用系统用户ID（1）
+            if (userId == null) {
+                userId = 1L;
+            }
             LocalDateTime now = LocalDateTime.now();
 
-            // 设置创建信息
-            if (baseEntity.getCreateBy() == null) {
-                baseEntity.setCreateBy(userId);
-            }
-            if (baseEntity.getCreateTime() == null) {
-                baseEntity.setCreateTime(now);
-            }
+            // 设置创建信息（必须设置，不能为null）
+            baseEntity.setCreateBy(userId);
+            baseEntity.setCreateTime(now);
 
             // 设置更新信息
-            if (baseEntity.getUpdateBy() == null) {
-                baseEntity.setUpdateBy(userId);
-            }
-            if (baseEntity.getUpdateTime() == null) {
-                baseEntity.setUpdateTime(now);
-            }
+            baseEntity.setUpdateBy(userId);
+            baseEntity.setUpdateTime(now);
         }
     }
 
@@ -51,7 +47,12 @@ public class AuditFieldHandler implements InsertListener, UpdateListener {
     public void onUpdate(Object entity) {
         if (entity instanceof BaseEntity) {
             BaseEntity baseEntity = (BaseEntity) entity;
-            baseEntity.setUpdateBy(SecurityUtils.getUserId());
+            Long userId = SecurityUtils.getUserId();
+            // 如果未登录，使用系统用户ID（1）
+            if (userId == null) {
+                userId = 1L;
+            }
+            baseEntity.setUpdateBy(userId);
             baseEntity.setUpdateTime(LocalDateTime.now());
         }
     }

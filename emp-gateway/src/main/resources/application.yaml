@@ -93,7 +93,7 @@ spring:
 sa-token:
   token-name: Authorization
   timeout: 2592000
-  active-timeout: 1800
+  active-timeout: 3600
   is-concurrent: true
   is-share: false
   token-style: uuid

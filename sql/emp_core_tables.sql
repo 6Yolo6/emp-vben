@@ -21,6 +21,7 @@ CREATE TABLE sys_dept (
     email           VARCHAR(100),
     status          SMALLINT        DEFAULT 1                   NOT NULL,
     deleted         SMALLINT        DEFAULT 0                   NOT NULL,
+    remark          VARCHAR(500),
     create_by       BIGINT,
     create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
     update_by       BIGINT,
@@ -40,6 +41,7 @@ COMMENT ON COLUMN sys_dept.phone IS '联系电话';
 COMMENT ON COLUMN sys_dept.email IS '邮箱';
 COMMENT ON COLUMN sys_dept.status IS '状态(0停用 1正常)';
 COMMENT ON COLUMN sys_dept.deleted IS '删除标志(0未删除 1已删除)';
+COMMENT ON COLUMN sys_dept.remark IS '备注';
 COMMENT ON COLUMN sys_dept.create_by IS '创建人';
 COMMENT ON COLUMN sys_dept.create_time IS '创建时间';
 COMMENT ON COLUMN sys_dept.update_by IS '更新人';
@@ -142,18 +144,20 @@ CREATE INDEX idx_user_deleted ON sys_user(deleted);
 -- ========================================
 DROP TABLE IF EXISTS sys_role CASCADE;
 CREATE TABLE sys_role (
-    id              BIGSERIAL       PRIMARY KEY,
-    role_name       VARCHAR(50)     NOT NULL,
-    role_key        VARCHAR(50)     NOT NULL,
-    role_sort       INTEGER         DEFAULT 0                   NOT NULL,
-    data_scope      SMALLINT        DEFAULT 1                   NOT NULL,
-    status          SMALLINT        DEFAULT 1                   NOT NULL,
-    deleted         SMALLINT        DEFAULT 0                   NOT NULL,
-    remark          VARCHAR(500),
-    create_by       BIGINT,
-    create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
-    update_by       BIGINT,
-    update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
+    id                      BIGSERIAL       PRIMARY KEY,
+    role_name               VARCHAR(50)     NOT NULL,
+    role_key                VARCHAR(50)     NOT NULL,
+    role_sort               INTEGER         DEFAULT 0                   NOT NULL,
+    data_scope              SMALLINT        DEFAULT 1                   NOT NULL,
+    menu_check_strictly     BOOLEAN         DEFAULT TRUE                NOT NULL,
+    dept_check_strictly     BOOLEAN         DEFAULT TRUE                NOT NULL,
+    status                  SMALLINT        DEFAULT 1                   NOT NULL,
+    deleted                 SMALLINT        DEFAULT 0                   NOT NULL,
+    remark                  VARCHAR(500),
+    create_by               BIGINT,
+    create_time             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
+    update_by               BIGINT,
+    update_time             TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
     CONSTRAINT uk_role_key UNIQUE (role_key),
     CONSTRAINT chk_role_status CHECK (status IN (0, 1)),
     CONSTRAINT chk_role_deleted CHECK (deleted IN (0, 1)),
@@ -166,6 +170,8 @@ COMMENT ON COLUMN sys_role.role_name IS '角色名称';
 COMMENT ON COLUMN sys_role.role_key IS '角色权限标识';
 COMMENT ON COLUMN sys_role.role_sort IS '显示顺序';
 COMMENT ON COLUMN sys_role.data_scope IS '数据范围(1全部 2自定义 3本部门 4本部门及以下 5仅本人)';
+COMMENT ON COLUMN sys_role.menu_check_strictly IS '菜单树选择项是否关联显示(0父子不互相关联显示 1父子互相关联显示)';
+COMMENT ON COLUMN sys_role.dept_check_strictly IS '部门树选择项是否关联显示(0父子不互相关联显示 1父子互相关联显示)';
 COMMENT ON COLUMN sys_role.status IS '状态(0停用 1正常)';
 COMMENT ON COLUMN sys_role.deleted IS '删除标志(0未删除 1已删除)';
 COMMENT ON COLUMN sys_role.remark IS '备注';
