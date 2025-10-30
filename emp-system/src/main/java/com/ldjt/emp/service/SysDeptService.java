@@ -77,4 +77,12 @@ public interface SysDeptService extends IService<SysDept> {
      * @return 是否成功
      */
     boolean moveDept(Long deptId, Long newParentId);
+    
+    /**
+     * 根据租户ID查询部门树
+     *
+     * @param tenantId 租户ID
+     * @return 部门树列表
+     */
+    List<DeptTreeDTO> getDeptTreeByTenant(Long tenantId);
 }

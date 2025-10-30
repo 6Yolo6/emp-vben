@@ -116,4 +116,13 @@ public class SysPostController {
     public Result<List<Long>> getPostRoles(@PathVariable Long id) {
         return Result.success(postService.getPostRoleIds(id));
     }
+    
+    /**
+     * 根据租户ID查询岗位列表
+     */
+    @Operation(summary = "根据租户ID查询岗位列表")
+    @GetMapping("/list/by-tenant")
+    public Result<List<SysPost>> listByTenant(@RequestParam Long tenantId) {
+        return Result.success(postService.listPostsByTenant(tenantId));
+    }
 }

@@ -49,6 +49,9 @@ public class PermissionServiceImpl implements PermissionService {
     
     @Override
     public List<SysRole> getUserRoles(Long userId) {
+        // 获取当前租户ID
+        Long tenantId = getCurrentTenantId();
+        
         // 1. 获取用户直接分配的角色
         QueryWrapper directRoleQuery = QueryWrapper.create()
                 .select(SYS_ROLE.ALL_COLUMNS)
@@ -57,6 +60,11 @@ public class PermissionServiceImpl implements PermissionService {
                 .where(SYS_USER_ROLE.USER_ID.eq(userId))
                 .and(SYS_ROLE.DELETED.eq(0))
                 .and(SYS_ROLE.STATUS.eq(1));
+        
+        // 多租户模式下添加租户过滤
+        if (tenantId != null) {
+            directRoleQuery.and(SYS_USER_ROLE.TENANT_ID.eq(tenantId));
+        }
         
         List<SysRole> directRoles = sysRoleMapper.selectListByQuery(directRoleQuery);
         
@@ -69,6 +77,12 @@ public class PermissionServiceImpl implements PermissionService {
                 .where(SYS_USER_POST.USER_ID.eq(userId))
                 .and(SYS_ROLE.DELETED.eq(0))
                 .and(SYS_ROLE.STATUS.eq(1));
+        
+        // 多租户模式下添加租户过滤
+        if (tenantId != null) {
+            postRoleQuery.and(SYS_USER_POST.TENANT_ID.eq(tenantId))
+                         .and(SYS_POST_ROLE.TENANT_ID.eq(tenantId));
+        }
         
         List<SysRole> postRoles = sysRoleMapper.selectListByQuery(postRoleQuery);
         
@@ -88,7 +102,25 @@ public class PermissionServiceImpl implements PermissionService {
             }
         }
         
+        log.debug("获取用户角色: userId={}, tenantId={}, roleCount={}", userId, tenantId, allRoles.size());
         return allRoles;
+    }
+    
+    /**
+     * 获取当前租户ID
+     */
+    private Long getCurrentTenantId() {
+        try {
+            if (StpUtil.isLogin()) {
+                Object tenantId = StpUtil.getSession().get("tenantId");
+                if (tenantId != null) {
+                    return Long.valueOf(tenantId.toString());
+                }
+            }
+        } catch (Exception e) {
+            log.warn("获取当前租户ID失败", e);
+        }
+        return null;
     }
     
     @Override

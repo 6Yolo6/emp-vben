@@ -15,4 +15,9 @@ public class SysUserRole {
     private Long userId;
     
     private Long roleId;
+    
+    /**
+     * 租户ID（该角色关联在哪个租户下）
+     */
+    private Long tenantId;
 }

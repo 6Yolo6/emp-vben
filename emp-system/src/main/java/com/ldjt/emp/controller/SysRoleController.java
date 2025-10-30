@@ -69,9 +69,9 @@ public class SysRoleController {
     }
     
     @GetMapping("/list")
-    @Operation(summary = "查询所有角色", description = "查询所有角色列表")
+    @Operation(summary = "查询所有角色", description = "查询当前租户的所有角色列表")
     public Result<java.util.List<SysRole>> list() {
-        return Result.success(sysRoleService.list());
+        return Result.success(sysRoleService.listByTenant());
     }
     
     @DeleteMapping("/batch")

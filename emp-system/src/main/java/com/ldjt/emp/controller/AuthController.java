@@ -56,4 +56,48 @@ public class AuthController {
         LoginResponse.TokenInfo tokenInfo = authService.refreshToken();
         return Result.success(tokenInfo);
     }
+
+    @PostMapping("/switch-tenant")
+    @Operation(summary = "切换租户", description = "切换到其他租户")
+    public Result<LoginResponse.UserInfo> switchTenant(
+            @RequestParam(required = false) String tenantCode,
+            @RequestParam(required = false) Long tenantId) {
+        LoginResponse.UserInfo userInfo;
+        if (tenantId != null) {
+            userInfo = authService.switchTenantById(tenantId);
+        } else if (tenantCode != null) {
+            userInfo = authService.switchTenant(tenantCode);
+        } else {
+            throw new RuntimeException("租户代码或租户ID必须提供一个");
+        }
+        return Result.success(userInfo);
+    }
+
+    @GetMapping("/user-tenants")
+    @Operation(summary = "获取用户可用租户列表", description = "根据用户名获取该用户可以登录的租户列表")
+    public Result<?> getUserTenants(@RequestParam String username) {
+        return Result.success(authService.getUserAvailableTenants(username));
+    }
+
+    @GetMapping("/tenants")
+    @Operation(summary = "获取所有可用租户列表", description = "获取所有状态正常的租户列表供登录选择")
+    public Result<?> getAllTenants() {
+        return Result.success(authService.getAllAvailableTenants());
+    }
+
+    @PostMapping("/switch-to-user")
+    @Operation(summary = "切换到其他用户", description = "管理员专用：切换到其他用户账号进行调试")
+    public Result<LoginResponse> switchToUser(
+            @RequestParam Long targetUserId,
+            @RequestParam(required = false) Long tenantId) {
+        LoginResponse userInfo = authService.switchToUser(targetUserId, tenantId);
+        return Result.success(userInfo);
+    }
+
+    @PostMapping("/switch-back")
+    @Operation(summary = "切换回原账号", description = "从其他用户账号切换回管理员账号")
+    public Result<LoginResponse> switchBack() {
+        LoginResponse userInfo = authService.switchBackToOriginal();
+        return Result.success(userInfo);
+    }
 }

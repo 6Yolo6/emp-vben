@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * 用户实体类
- * 
+ *
  * @author emp
  */
 @Data
@@ -64,6 +64,21 @@ public class SysUser extends BaseEntity {
      * 部门ID
      */
     private Long deptId;
+
+    /**
+     * 全局主岗位ID（从所有单位的主岗位中选择一个作为全局主岗位）
+     */
+    private Long mainPostId;
+
+    /**
+     * 默认租户ID
+     */
+    private Long defaultTenantId;
+
+    /**
+     * 用户性别(0男 1女 2未知)
+     */
+    private Integer sex;
 
     /**
      * 删除标志(0未删除 1已删除)

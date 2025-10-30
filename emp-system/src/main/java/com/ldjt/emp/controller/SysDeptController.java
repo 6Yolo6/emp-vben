@@ -76,4 +76,12 @@ public class SysDeptController {
         boolean result = sysDeptService.moveDept(id, newParentId);
         return Result.success(result);
     }
+    
+    @GetMapping("/tree/by-tenant")
+    @Operation(summary = "根据租户ID查询部门树", description = "查询指定租户的部门树形结构")
+    public Result<List<com.ldjt.emp.dto.DeptTreeDTO>> getDeptTreeByTenant(
+            @Parameter(description = "租户ID") @RequestParam Long tenantId) {
+        List<com.ldjt.emp.dto.DeptTreeDTO> deptTree = sysDeptService.getDeptTreeByTenant(tenantId);
+        return Result.success(deptTree);
+    }
 }

@@ -74,4 +74,12 @@ public interface SysPostService extends IService<SysPost> {
      * @return 角色ID列表
      */
     List<Long> getPostRoleIds(Long postId);
+    
+    /**
+     * 根据租户ID查询岗位列表
+     *
+     * @param tenantId 租户ID
+     * @return 岗位列表
+     */
+    List<SysPost> listPostsByTenant(Long tenantId);
 }

@@ -59,7 +59,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
     List<Long> selectDirectUserRoleIds(@Param("userId") Long userId);
     
     /**
-     * 根据角色ID列表查询菜单权限标识
+     * 根据角色ID列表和租户ID查询菜单权限标识
      */
     @Select("<script>" +
             "SELECT DISTINCT m.perms FROM sys_menu m " +
@@ -68,12 +68,13 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
             "<foreach collection='roleIds' item='id' open='(' separator=',' close=')'>" +
             "#{id}" +
             "</foreach>" +
+            " AND rm.tenant_id = #{tenantId}" +
             " AND m.status = 1 AND m.deleted = 0 AND m.perms IS NOT NULL AND m.perms != ''" +
             "</script>")
-    List<String> selectMenuPermissionsByRoleIds(@Param("roleIds") List<Long> roleIds);
+    List<String> selectMenuPermissionsByRoleIds(@Param("roleIds") List<Long> roleIds, @Param("tenantId") Long tenantId);
     
     /**
-     * 根据岗位ID列表查询角色标识
+     * 根据岗位ID列表和租户ID查询角色标识
      */
     @Select("<script>" +
             "SELECT DISTINCT r.role_key FROM sys_role r " +
@@ -82,15 +83,39 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
             "<foreach collection='postIds' item='id' open='(' separator=',' close=')'>" +
             "#{id}" +
             "</foreach>" +
+            " AND pr.tenant_id = #{tenantId}" +
             " AND r.status = 1 AND r.deleted = 0" +
             "</script>")
-    List<String> selectRoleCodesByPostIds(@Param("postIds") List<Long> postIds);
+    List<String> selectRoleCodesByPostIds(@Param("postIds") List<Long> postIds, @Param("tenantId") Long tenantId);
     
     /**
-     * 根据用户ID查询直接分配的角色标识
+     * 根据用户ID和租户ID查询直接分配的角色标识
      */
     @Select("SELECT DISTINCT r.role_key FROM sys_role r " +
             "INNER JOIN sys_user_role ur ON r.id = ur.role_id " +
-            "WHERE ur.user_id = #{userId} AND r.status = 1 AND r.deleted = 0")
-    List<String> selectRoleCodesByUserId(@Param("userId") Long userId);
+            "WHERE ur.user_id = #{userId} AND ur.tenant_id = #{tenantId} AND r.status = 1 AND r.deleted = 0")
+    List<String> selectRoleCodesByUserId(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
+    
+    /**
+     * 根据用户ID和租户ID查询岗位ID列表
+     */
+    @Select("SELECT post_id FROM sys_user_post WHERE user_id = #{userId} AND tenant_id = #{tenantId}")
+    List<Long> selectUserPostIdsByTenant(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
+    
+    /**
+     * 根据岗位ID列表和租户ID查询角色ID列表
+     */
+    @Select("<script>" +
+            "SELECT DISTINCT role_id FROM sys_post_role " +
+            "WHERE post_id IN " +
+            "<foreach collection='postIds' item='id' open='(' separator=',' close=')'>#{id}</foreach>" +
+            " AND tenant_id = #{tenantId}" +
+            "</script>")
+    List<Long> selectPostRoleIdsByTenant(@Param("postIds") List<Long> postIds, @Param("tenantId") Long tenantId);
+    
+    /**
+     * 根据用户ID和租户ID查询直接分配的角色ID列表
+     */
+    @Select("SELECT role_id FROM sys_user_role WHERE user_id = #{userId} AND tenant_id = #{tenantId}")
+    List<Long> selectDirectUserRoleIdsByTenant(@Param("userId") Long userId, @Param("tenantId") Long tenantId);
 }

@@ -36,9 +36,7 @@ public class SysUserController {
     @SaCheckPermission("system:user:add")
     @PostMapping
     public Result<Void> create(@RequestBody UserCreateDTO dto) {
-        SysUser user = new SysUser();
-        BeanUtils.copyProperties(dto, user);
-        userService.createUser(user);
+        userService.createUser(dto);
         return Result.success();
     }
     
@@ -49,10 +47,7 @@ public class SysUserController {
     @SaCheckPermission("system:user:edit")
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody UserUpdateDTO dto) {
-        SysUser user = new SysUser();
-        BeanUtils.copyProperties(dto, user);
-        user.setId(id);
-        userService.updateUser(user);
+        userService.updateUser(id, dto);
         return Result.success();
     }
     
@@ -68,13 +63,13 @@ public class SysUserController {
     }
     
     /**
-     * 根据ID查询用户
+     * 根据ID查询用户（返回包含关联信息的VO）
      */
     @Operation(summary = "根据ID查询用户")
     @SaCheckPermission("system:user:query")
     @GetMapping("/{id}")
-    public Result<SysUser> getById(@PathVariable Long id) {
-        return Result.success(userService.getUserById(id));
+    public Result<com.ldjt.emp.vo.user.UserVO> getById(@PathVariable Long id) {
+        return Result.success(userService.getUserVOById(id));
     }
     
     /**
@@ -108,14 +103,14 @@ public class SysUserController {
     }
     
     /**
-     * 分页查询用户
+     * 分页查询用户（返回包含关联信息的VO）
      */
     @Operation(summary = "分页查询用户")
     @SaCheckPermission("system:user:query")
     @GetMapping("/page")
-    public Result<com.mybatisflex.core.paginate.Page<SysUser>> page(
+    public Result<com.mybatisflex.core.paginate.Page<com.ldjt.emp.vo.user.UserVO>> page(
             com.ldjt.emp.dto.UserPageQueryDTO queryDTO) {
-        return Result.success(userService.pageQuery(queryDTO));
+        return Result.success(userService.pageQueryVO(queryDTO));
     }
     
     /**
@@ -165,5 +160,37 @@ public class SysUserController {
     @GetMapping("/{id}/posts")
     public Result<List<Long>> getUserPosts(@PathVariable Long id) {
         return Result.success(userService.getUserPostIds(id));
+    }
+
+    /**
+     * 获取用户权限信息
+     */
+    @Operation(summary = "获取用户权限信息")
+    @GetMapping("/{id}/permissions")
+    public Result<com.ldjt.emp.vo.user.UserPermissionVO> getUserPermissions(@PathVariable Long id) {
+        com.ldjt.emp.vo.user.UserPermissionVO permissions = userService.getUserPermissionInfo(id);
+        return Result.success(permissions);
+    }
+
+    /**
+     * 获取用户直接分配的菜单ID
+     */
+    @Operation(summary = "获取用户直接分配的菜单ID")
+    @GetMapping("/{id}/direct-menus")
+    public Result<List<Long>> getUserDirectMenuIds(@PathVariable Long id) {
+        List<Long> menuIds = userService.getUserDirectMenuIds(id);
+        return Result.success(menuIds);
+    }
+
+    /**
+     * 分配用户权限
+     */
+    @Operation(summary = "分配用户权限")
+    @PostMapping("/{id}/permissions")
+    public Result<Void> assignUserPermissions(
+            @io.swagger.v3.oas.annotations.Parameter(description = "用户ID") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.Parameter(description = "菜单ID列表") @RequestBody List<Long> menuIds) {
+        boolean result = userService.assignUserPermissions(id, menuIds);
+        return result ? Result.success() : Result.error("分配权限失败");
     }
 }

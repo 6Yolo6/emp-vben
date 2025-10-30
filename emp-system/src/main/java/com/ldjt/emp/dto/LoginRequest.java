@@ -26,4 +26,7 @@ public class LoginRequest {
 
     @Schema(description = "验证码UUID", example = "uuid-1234")
     private String uuid;
+
+    @Schema(description = "租户编码", example = "default")
+    private String tenantCode;
 }

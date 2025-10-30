@@ -57,6 +57,13 @@ public interface SysRoleService extends IService<SysRole> {
      */
     List<Long> getRoleDeptIds(Long roleId);
 
+    /**
+     * 查询当前租户的所有角色
+     *
+     * @return 角色列表
+     */
+    List<SysRole> listByTenant();
+
     @Transactional(rollbackFor = Exception.class)
     boolean removeById(Long id);
 }

@@ -103,6 +103,7 @@ CREATE TABLE sys_user (
     status          SMALLINT        DEFAULT 1                   NOT NULL,
     dept_id         BIGINT,
     deleted         SMALLINT        DEFAULT 0                   NOT NULL,
+    sex             SMALLINT,
     login_ip        VARCHAR(128),
     login_date      TIMESTAMP,
     create_by       BIGINT,
@@ -316,4 +317,44 @@ BEGIN
     RAISE NOTICE '7. sys_user_post - 用户岗位关联表';
     RAISE NOTICE '8. sys_post_role - 岗位角色关联表';
     RAISE NOTICE '9. sys_role_menu - 角色菜单关联表';
+END $$;
+-- ========================================
+-- 用户菜单权限关联表 (sys_user_menu)
+-- 用于存储直接分配给用户的菜单权限（不通过角色或岗位）
+-- ========================================
+
+DROP TABLE IF EXISTS sys_user_menu CASCADE;
+CREATE TABLE sys_user_menu (
+    id              BIGSERIAL       PRIMARY KEY,
+    user_id         BIGINT          NOT NULL,
+    menu_id         BIGINT          NOT NULL,
+    tenant_id       BIGINT          NOT NULL,
+    deleted         SMALLINT        DEFAULT 0                   NOT NULL,
+    create_by       BIGINT,
+    create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
+    update_by       BIGINT,
+    update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL,
+    CONSTRAINT chk_user_menu_deleted CHECK (deleted IN (0, 1)),
+    CONSTRAINT uk_user_menu_tenant UNIQUE (user_id, menu_id, tenant_id, deleted)
+);
+
+COMMENT ON TABLE sys_user_menu IS '用户菜单权限关联表';
+COMMENT ON COLUMN sys_user_menu.id IS '主键ID';
+COMMENT ON COLUMN sys_user_menu.user_id IS '用户ID';
+COMMENT ON COLUMN sys_user_menu.menu_id IS '菜单ID';
+COMMENT ON COLUMN sys_user_menu.tenant_id IS '租户ID';
+COMMENT ON COLUMN sys_user_menu.deleted IS '删除标志(0未删除 1已删除)';
+COMMENT ON COLUMN sys_user_menu.create_by IS '创建人';
+COMMENT ON COLUMN sys_user_menu.create_time IS '创建时间';
+COMMENT ON COLUMN sys_user_menu.update_by IS '更新人';
+COMMENT ON COLUMN sys_user_menu.update_time IS '更新时间';
+
+CREATE INDEX idx_user_menu_user_id ON sys_user_menu(user_id);
+CREATE INDEX idx_user_menu_menu_id ON sys_user_menu(menu_id);
+CREATE INDEX idx_user_menu_tenant_id ON sys_user_menu(tenant_id);
+
+-- 完成提示
+DO $$
+BEGIN
+    RAISE NOTICE '用户菜单权限关联表创建完成！';
 END $$;

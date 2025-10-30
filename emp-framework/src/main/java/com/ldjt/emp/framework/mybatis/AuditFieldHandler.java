@@ -1,7 +1,9 @@
 package com.ldjt.emp.framework.mybatis;
 
 import com.ldjt.emp.common.core.domain.BaseEntity;
+import com.ldjt.emp.common.entity.TenantEntity;
 import com.ldjt.emp.framework.security.SecurityUtils;
+import com.ldjt.emp.framework.tenant.TenantContextHolder;
 import com.mybatisflex.annotation.InsertListener;
 import com.mybatisflex.annotation.UpdateListener;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,17 @@ public class AuditFieldHandler implements InsertListener, UpdateListener {
             // 设置更新信息
             baseEntity.setUpdateBy(userId);
             baseEntity.setUpdateTime(now);
+        }
+        
+        // 自动设置租户ID
+        if (entity instanceof TenantEntity) {
+            TenantEntity tenantEntity = (TenantEntity) entity;
+            if (tenantEntity.getTenantId() == null) {
+                Long tenantId = TenantContextHolder.getTenantId();
+                if (tenantId != null) {
+                    tenantEntity.setTenantId(tenantId);
+                }
+            }
         }
     }
 

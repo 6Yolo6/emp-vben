@@ -36,7 +36,8 @@ public class UserPageQueryDTO {
     private String phoneNumber;
     
     /**
-     * 状态
+     * 状态（主单位状态）
+     * 1-在职 2-辞职 3-调出 4-退休
      */
     private Integer status;
     
@@ -44,6 +45,11 @@ public class UserPageQueryDTO {
      * 部门ID
      */
     private Long deptId;
+    
+    /**
+     * 租户ID（可选，用于跨租户查询）
+     */
+    private Long tenantId;
     
     /**
      * 开始时间

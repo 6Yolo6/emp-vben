@@ -15,4 +15,9 @@ public class SysUserPost {
     private Long userId;
     
     private Long postId;
+    
+    /**
+     * 租户ID（该岗位关联在哪个租户下）
+     */
+    private Long tenantId;
 }

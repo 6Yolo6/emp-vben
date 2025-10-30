@@ -1,6 +1,6 @@
 package com.ldjt.emp.entity;
 
-import com.ldjt.emp.common.core.domain.BaseEntity;
+import com.ldjt.emp.common.entity.TenantBaseEntity;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Table("sys_dept")
-public class SysDept extends BaseEntity {
+public class SysDept extends TenantBaseEntity {
     
     @Id(keyType = KeyType.Auto)
     private Long id;

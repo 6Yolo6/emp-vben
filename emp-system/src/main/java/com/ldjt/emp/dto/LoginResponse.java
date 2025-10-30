@@ -68,6 +68,15 @@ public class LoginResponse {
 
         @Schema(description = "权限列表")
         private java.util.List<String> permissions;
+
+        @Schema(description = "租户ID")
+        private Long tenantId;
+
+        @Schema(description = "租户编码")
+        private String tenantCode;
+
+        @Schema(description = "租户名称")
+        private String tenantName;
     }
 
     @Data
