@@ -9,6 +9,7 @@ spring:
 
   profiles:
     active: dev
+    include: minio  # 引入MinIO配置
 
   # 开发工具配置
   devtools:

@@ -51,6 +51,7 @@
         <!-- 其他工具版本 -->
         <redisson.version>3.27.2</redisson.version>
         <druid.version>1.2.23</druid.version>
+        <minio.version>8.5.7</minio.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <!-- plugin版本 -->
@@ -174,6 +175,13 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-3-starter</artifactId>
                 <version>${druid.version}</version>
+            </dependency>
+
+            <!-- MinIO对象存储 -->
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
             </dependency>
 
             <!-- Jakarta Validation -->

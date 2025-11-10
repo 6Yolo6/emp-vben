@@ -2,6 +2,7 @@ package com.ldjt.emp.common.core.domain;
 
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -23,7 +24,7 @@ public class BaseEntity implements Serializable {
     /**
      * 主键ID
      */
-    @Id
+    @Id(keyType = KeyType.Auto)
     @Schema(description = "主键ID")
     private Long id;
 

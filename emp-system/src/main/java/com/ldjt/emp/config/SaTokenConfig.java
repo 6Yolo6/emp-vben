@@ -40,6 +40,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                     "/auth/register",        // 注册接口
                     "/auth/tenants",         // 获取租户列表（登录前）
                     "/auth/user-tenants",    // 获取用户租户列表（登录前）
+                    "/system/file/download/**", // 文件下载接口（公开访问）
                     "/doc.html",             // Knife4j文档
                     "/swagger-ui/**",        // Swagger UI
                     "/swagger-resources/**", // Swagger资源

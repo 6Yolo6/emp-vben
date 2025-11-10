@@ -358,3 +358,6 @@ DO $$
 BEGIN
     RAISE NOTICE '用户菜单权限关联表创建完成！';
 END $$;
+
+
+COMMENT ON COLUMN sys_user_tenant.status IS '状态(1在职 2辞职 3调出 4退休)';

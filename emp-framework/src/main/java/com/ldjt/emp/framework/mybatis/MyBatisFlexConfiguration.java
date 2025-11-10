@@ -29,9 +29,9 @@ public class MyBatisFlexConfiguration {
         return configurer -> {
             FlexGlobalConfig globalConfig = FlexGlobalConfig.getDefaultConfig();
 
-            // 注册审计字段自动填充监听器
-            globalConfig.registerInsertListener(auditFieldHandler, BaseEntity.class);
-            globalConfig.registerUpdateListener(auditFieldHandler, BaseEntity.class);
+            // 注册审计字段自动填充监听器（注册到Object.class以支持所有实体）
+            globalConfig.registerInsertListener(auditFieldHandler, Object.class);
+            globalConfig.registerUpdateListener(auditFieldHandler, Object.class);
 
             // 配置租户插件
             TenantManager.setTenantFactory(tenantLineHandler);

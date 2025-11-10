@@ -3,9 +3,12 @@ package com.ldjt.emp.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.ldjt.emp.common.core.domain.Result;
 import com.ldjt.emp.dto.UserCreateDTO;
+import com.ldjt.emp.dto.UserPageQueryDTO;
 import com.ldjt.emp.dto.UserUpdateDTO;
 import com.ldjt.emp.entity.SysUser;
 import com.ldjt.emp.service.SysUserService;
+import com.ldjt.emp.vo.user.UserVO;
+import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +20,7 @@ import java.util.List;
 
 /**
  * 用户管理控制器
- * 
+ *
  * @author emp
  */
 @Tag(name = "用户管理")
@@ -25,10 +28,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/system/user")
 public class SysUserController {
-    
+
     @Autowired
     private SysUserService userService;
-    
+
     /**
      * 创建用户
      */
@@ -39,7 +42,7 @@ public class SysUserController {
         userService.createUser(dto);
         return Result.success();
     }
-    
+
     /**
      * 更新用户
      */
@@ -50,7 +53,7 @@ public class SysUserController {
         userService.updateUser(id, dto);
         return Result.success();
     }
-    
+
     /**
      * 删除用户
      */
@@ -61,7 +64,7 @@ public class SysUserController {
         userService.deleteUser(id);
         return Result.success();
     }
-    
+
     /**
      * 根据ID查询用户（返回包含关联信息的VO）
      */
@@ -71,7 +74,7 @@ public class SysUserController {
     public Result<com.ldjt.emp.vo.user.UserVO> getById(@PathVariable Long id) {
         return Result.success(userService.getUserVOById(id));
     }
-    
+
     /**
      * 查询所有用户
      */
@@ -81,7 +84,7 @@ public class SysUserController {
     public Result<List<SysUser>> list() {
         return Result.success(userService.listAllUsers());
     }
-    
+
     /**
      * 更新用户状态
      */
@@ -91,7 +94,7 @@ public class SysUserController {
         userService.updateUserStatus(id, status);
         return Result.success();
     }
-    
+
     /**
      * 重置用户密码
      */
@@ -101,18 +104,18 @@ public class SysUserController {
         userService.resetPassword(id, newPassword);
         return Result.success();
     }
-    
+
     /**
      * 分页查询用户（返回包含关联信息的VO）
      */
     @Operation(summary = "分页查询用户")
     @SaCheckPermission("system:user:query")
     @GetMapping("/page")
-    public Result<com.mybatisflex.core.paginate.Page<com.ldjt.emp.vo.user.UserVO>> page(
-            com.ldjt.emp.dto.UserPageQueryDTO queryDTO) {
+    public Result<Page<UserVO>> page(
+            UserPageQueryDTO queryDTO) {
         return Result.success(userService.pageQueryVO(queryDTO));
     }
-    
+
     /**
      * 分配用户角色
      */
@@ -122,7 +125,7 @@ public class SysUserController {
         userService.assignRoles(id, roleIds);
         return Result.success();
     }
-    
+
     /**
      * 获取用户角色
      */
@@ -131,7 +134,7 @@ public class SysUserController {
     public Result<List<Long>> getUserRoles(@PathVariable Long id) {
         return Result.success(userService.getUserRoleIds(id));
     }
-    
+
     /**
      * 批量删除用户
      */
@@ -142,7 +145,7 @@ public class SysUserController {
         userService.batchDelete(userIds);
         return Result.success();
     }
-    
+
     /**
      * 分配用户岗位
      */
@@ -152,7 +155,7 @@ public class SysUserController {
         userService.assignPosts(id, postIds);
         return Result.success();
     }
-    
+
     /**
      * 获取用户岗位
      */

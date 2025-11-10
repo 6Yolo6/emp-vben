@@ -5,6 +5,7 @@ import com.ldjt.emp.dto.UserPageQueryDTO;
 import com.ldjt.emp.entity.*;
 import com.ldjt.emp.framework.tenant.TenantContextHolder;
 import com.ldjt.emp.service.PermissionService;
+import com.ldjt.emp.service.SysUserMenuService;
 import com.ldjt.emp.service.SysUserTenantService;
 import com.ldjt.emp.vo.user.UserPermissionVO;
 import com.ldjt.emp.vo.user.UserTenantVO;
@@ -70,7 +71,7 @@ public class SysUserServiceImpl implements SysUserService {
     private SysTenantMapper tenantMapper;
 
     @Autowired
-    private com.ldjt.emp.service.SysUserMenuService sysUserMenuService;
+    private SysUserMenuService sysUserMenuService;
 
     @Autowired
     private SysMenuMapper sysMenuMapper;
@@ -171,33 +172,36 @@ public class SysUserServiceImpl implements SysUserService {
                 .map(SysUser::getId)
                 .collect(Collectors.toList());
 
-        // 1. 查询所有用户的租户配置
-        QueryWrapper tenantQuery = QueryWrapper.create()
-                .where(SYS_USER_TENANT.USER_ID.in(userIds));
+        // 1. 查询所有用户的租户配置（不应用租户过滤，需要查询所有租户配置以找到主租户）
+        // 临时禁用租户过滤
+        Long originalTenantId = TenantContextHolder.getTenantId();
+        List<SysUserTenant> userTenants;
+        try {
+            TenantContextHolder.setTenantId(null); // 禁用租户过滤
 
-        // 如果指定了租户ID，只查询该租户下的配置
-        if (currentTenantId != null) {
-            tenantQuery.and(SYS_USER_TENANT.TENANT_ID.eq(currentTenantId));
+            QueryWrapper tenantQuery = QueryWrapper.create()
+                    .where(SYS_USER_TENANT.USER_ID.in(userIds));
+
+            userTenants = userTenantMapper.selectListByQuery(tenantQuery);
+        } finally {
+            // 恢复租户上下文
+            TenantContextHolder.setTenantId(originalTenantId);
         }
 
-        List<SysUserTenant> userTenants = userTenantMapper.selectListByQuery(tenantQuery);
-
-        // 按用户ID分组，并找出每个用户的主租户（或当前租户）
+        // 按用户ID分组，并找出每个用户的主租户
         Map<Long, SysUserTenant> primaryTenantMap = new HashMap<>();
+
+        // 第一遍：优先查找标记为主租户的配置
         for (SysUserTenant ut : userTenants) {
-            // 如果是主租户，直接使用
+            Long userId = ut.getUserId();
+
+            // 如果是主租户，直接使用（优先级最高）
             if (Boolean.TRUE.equals(ut.getIsPrimary())) {
-                primaryTenantMap.put(ut.getUserId(), ut);
-            } else if (!primaryTenantMap.containsKey(ut.getUserId())) {
-                // 如果还没有主租户，使用当前租户的配置
-                if (currentTenantId != null && currentTenantId.equals(ut.getTenantId())) {
-                    primaryTenantMap.put(ut.getUserId(), ut);
-                } else if (currentTenantId == null) {
-                    // 没有指定租户，使用第一个
-                    primaryTenantMap.put(ut.getUserId(), ut);
-                }
+                primaryTenantMap.put(userId, ut);
             }
         }
+
+
 
         // 2. 收集需要查询的租户ID、部门ID
         Set<Long> tenantIds = userTenants.stream()
@@ -214,16 +218,20 @@ public class SysUserServiceImpl implements SysUserService {
         Map<Long, SysTenant> tenantMap = new HashMap<>();
         if (!tenantIds.isEmpty()) {
             List<SysTenant> tenants = sysTenantMapper.selectListByIds(tenantIds);
-            tenantMap = tenants.stream()
-                    .collect(Collectors.toMap(SysTenant::getId, t -> t));
+            if (tenants != null && !tenants.isEmpty()) {
+                tenantMap = tenants.stream()
+                        .collect(Collectors.toMap(SysTenant::getId, t -> t));
+            }
         }
 
         // 4. 批量查询部门信息
         Map<Long, SysDept> deptMap = new HashMap<>();
         if (!deptIds.isEmpty()) {
             List<SysDept> depts = sysDeptMapper.selectListByIds(deptIds);
-            deptMap = depts.stream()
-                    .collect(Collectors.toMap(SysDept::getId, dept -> dept));
+            if (depts != null && !depts.isEmpty()) {
+                deptMap = depts.stream()
+                        .collect(Collectors.toMap(SysDept::getId, dept -> dept));
+            }
         }
 
         // 5. 批量查询用户在各租户下的岗位
@@ -237,8 +245,10 @@ public class SysUserServiceImpl implements SysUserService {
         Map<Long, SysPost> postMap = new HashMap<>();
         if (!postIds.isEmpty()) {
             List<SysPost> posts = sysPostMapper.selectListByIds(postIds);
-            postMap = posts.stream()
-                    .collect(Collectors.toMap(SysPost::getId, p -> p));
+            if (posts != null && !posts.isEmpty()) {
+                postMap = posts.stream()
+                        .collect(Collectors.toMap(SysPost::getId, p -> p));
+            }
         }
 
         // 7. 转换为 VO 列表，并应用状态筛选
@@ -262,6 +272,8 @@ public class SysUserServiceImpl implements SysUserService {
                             finalPostMap,
                             userTenantPostsMap
                         );
+                    } else {
+                        log.warn("用户 {} 没有找到主租户配置", user.getId());
                     }
 
                     return vo;
@@ -997,7 +1009,7 @@ public class SysUserServiceImpl implements SysUserService {
             userTenantService.saveUserTenants(userId, dto.getTenants());
         } else {
             // 兼容模式：使用当前租户
-            Long currentTenantId = com.ldjt.emp.framework.tenant.TenantContextHolder.getTenantId();
+            Long currentTenantId = TenantContextHolder.getTenantId();
             if (currentTenantId != null && (dto.getRoleIds() != null || dto.getPostIds() != null)) {
                 com.ldjt.emp.dto.user.UserTenantDTO tenantDTO = new com.ldjt.emp.dto.user.UserTenantDTO();
                 tenantDTO.setTenantId(currentTenantId);
