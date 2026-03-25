@@ -1,20 +1,24 @@
 package com.ldjt.emp.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.ldjt.emp.entity.SysMenu;
 import com.ldjt.emp.entity.SysRole;
 import com.ldjt.emp.entity.SysRoleDept;
 import com.ldjt.emp.entity.SysRoleMenu;
+import com.ldjt.emp.entity.SysUser;
 import com.ldjt.emp.framework.tenant.TenantContextHolder;
 import com.ldjt.emp.mapper.SysMenuMapper;
 import com.ldjt.emp.mapper.SysPostRoleMapper;
 import com.ldjt.emp.mapper.SysRoleDeptMapper;
 import com.ldjt.emp.mapper.SysRoleMapper;
 import com.ldjt.emp.mapper.SysRoleMenuMapper;
+import com.ldjt.emp.mapper.SysUserMapper;
 import com.ldjt.emp.mapper.SysUserRoleMapper;
 import com.ldjt.emp.service.SysRoleService;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +33,7 @@ import static com.ldjt.emp.entity.table.SysRoleDeptTableDef.SYS_ROLE_DEPT;
 import static com.ldjt.emp.entity.table.SysRoleTableDef.SYS_ROLE;
 import static com.ldjt.emp.entity.table.SysRoleMenuTableDef.SYS_ROLE_MENU;
 import static com.ldjt.emp.entity.table.SysUserRoleTableDef.SYS_USER_ROLE;
+import static com.ldjt.emp.entity.table.SysUserTableDef.SYS_USER;
 
 /**
  * 角色服务实现类
@@ -36,6 +41,7 @@ import static com.ldjt.emp.entity.table.SysUserRoleTableDef.SYS_USER_ROLE;
  * @author emp
  */
 @Service
+@Slf4j
 public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements SysRoleService {
 
     @Autowired
@@ -46,6 +52,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     @Autowired
     private SysUserRoleMapper sysUserRoleMapper;
+
+    @Autowired
+    private SysUserMapper userMapper;
 
     @Autowired
     private SysPostRoleMapper sysPostRoleMapper;
@@ -69,7 +78,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Transactional(rollbackFor = Exception.class)
     public boolean assignMenus(Long roleId, List<Long> menuIds) {
         Long tenantId = TenantContextHolder.getTenantId();
-        
+
         // 先删除角色原有的菜单权限（添加租户过滤）
         QueryWrapper deleteWrapper = QueryWrapper.create()
                 .where(SYS_ROLE_MENU.ROLE_ID.eq(roleId))
@@ -87,7 +96,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             }
         }
 
-        // TODO: 清除相关用户的权限缓存
+        // 清除相关用户的权限缓存
+        clearUserPermissionCache(roleId);
 
         return true;
     }
@@ -95,7 +105,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     public List<Long> getRoleMenuIds(Long roleId) {
         Long tenantId = TenantContextHolder.getTenantId();
-        
+
         // 获取角色已分配的所有菜单ID（添加租户过滤）
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(SYS_ROLE_MENU.ROLE_ID.eq(roleId))
@@ -131,7 +141,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Transactional(rollbackFor = Exception.class)
     public boolean assignDepts(Long roleId, List<Long> deptIds) {
         Long tenantId = TenantContextHolder.getTenantId();
-        
+
         // 先删除角色原有的自定义部门（添加租户过滤）
         QueryWrapper deleteWrapper = QueryWrapper.create()
                 .where(SYS_ROLE_DEPT.ROLE_ID.eq(roleId))
@@ -155,7 +165,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     public List<Long> getRoleDeptIds(Long roleId) {
         Long tenantId = TenantContextHolder.getTenantId();
-        
+
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(SYS_ROLE_DEPT.ROLE_ID.eq(roleId))
                 .and(SYS_ROLE_DEPT.TENANT_ID.eq(tenantId));
@@ -208,5 +218,26 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
         // 执行删除
         return super.removeById(id);
+    }
+
+    /**
+     * 清除角色相关用户的权限缓存
+     */
+    private void clearUserPermissionCache(Long roleId) {
+        // 查询该角色下的所有用户
+        List<SysUser> users = userMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .select(SYS_USER.ID)
+                        .from(SYS_USER)
+                        .innerJoin(SYS_USER_ROLE).on(SYS_USER.ID.eq(SYS_USER_ROLE.USER_ID))
+                        .where(SYS_USER_ROLE.ROLE_ID.eq(roleId))
+                        .and(SYS_USER.DELETED.eq(0))
+        );
+
+        // 清除这些用户的权限缓存
+        for (SysUser user : users) {
+            StpUtil.kickout(user.getId());
+            log.debug("清除用户权限缓存，用户ID：{}", user.getId());
+        }
     }
 }

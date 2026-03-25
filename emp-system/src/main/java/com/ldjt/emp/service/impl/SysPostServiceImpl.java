@@ -1,10 +1,13 @@
 package com.ldjt.emp.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.ldjt.emp.entity.SysPost;
 import com.ldjt.emp.entity.SysPostRole;
+import com.ldjt.emp.entity.SysUser;
 import com.ldjt.emp.framework.tenant.TenantContextHolder;
 import com.ldjt.emp.mapper.SysPostMapper;
 import com.ldjt.emp.mapper.SysPostRoleMapper;
+import com.ldjt.emp.mapper.SysUserMapper;
 import com.ldjt.emp.mapper.SysUserPostMapper;
 import com.ldjt.emp.service.PermissionService;
 import com.ldjt.emp.service.SysPostService;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 import static com.ldjt.emp.entity.table.SysPostTableDef.SYS_POST;
 import static com.ldjt.emp.entity.table.SysPostRoleTableDef.SYS_POST_ROLE;
 import static com.ldjt.emp.entity.table.SysUserPostTableDef.SYS_USER_POST;
+import static com.ldjt.emp.entity.table.SysUserTableDef.SYS_USER;
 
 /**
  * 岗位服务实现
@@ -38,6 +42,9 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 
     @Autowired
     private SysUserPostMapper sysUserPostMapper;
+
+    @Autowired
+    private SysUserMapper userMapper;
 
     @Autowired
     private PermissionService permissionService;
@@ -169,7 +176,8 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
             }
         }
 
-        // TODO: 清除相关用户的权限缓存
+        // 清除相关用户的权限缓存
+        clearUserPermissionCache(postId);
 
         return true;
     }
@@ -195,5 +203,26 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
                 .and(SYS_POST.DELETED.eq(0))
                 .orderBy(SYS_POST.POST_SORT.asc());
         return list(queryWrapper);
+    }
+
+    /**
+     * 清除岗位相关用户的权限缓存
+     */
+    private void clearUserPermissionCache(Long postId) {
+        // 查询该岗位下的所有用户
+        List<SysUser> users = userMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .select(SYS_USER.ID)
+                        .from(SYS_USER)
+                        .innerJoin(SYS_USER_POST).on(SYS_USER.ID.eq(SYS_USER_POST.USER_ID))
+                        .where(SYS_USER_POST.POST_ID.eq(postId))
+                        .and(SYS_USER.DELETED.eq(0))
+        );
+        
+        // 清除这些用户的权限缓存
+        for (SysUser user : users) {
+            StpUtil.kickout(user.getId());
+            log.debug("清除用户权限缓存，用户ID：{}", user.getId());
+        }
     }
 }

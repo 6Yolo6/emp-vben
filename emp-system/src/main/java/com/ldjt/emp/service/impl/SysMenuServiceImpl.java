@@ -2,7 +2,9 @@ package com.ldjt.emp.service.impl;
 
 import com.ldjt.emp.dto.MenuTreeDTO;
 import com.ldjt.emp.entity.SysMenu;
+import com.ldjt.emp.framework.tenant.TenantContextHolder;
 import com.ldjt.emp.mapper.SysMenuMapper;
+import com.ldjt.emp.mapper.SysRoleMenuMapper;
 import com.ldjt.emp.service.SysMenuService;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
@@ -13,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.ldjt.emp.entity.table.SysMenuTableDef.SYS_MENU;
+import static com.ldjt.emp.entity.table.SysRoleMenuTableDef.SYS_ROLE_MENU;
+import static com.ldjt.emp.entity.table.SysUserRoleTableDef.SYS_USER_ROLE;
 
 /**
  * 菜单服务实现类
@@ -21,6 +25,14 @@ import static com.ldjt.emp.entity.table.SysMenuTableDef.SYS_MENU;
  */
 @Service
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements SysMenuService {
+
+    private final SysMenuMapper menuMapper;
+    private final SysRoleMenuMapper roleMenuMapper;
+
+    public SysMenuServiceImpl(SysMenuMapper menuMapper, SysRoleMenuMapper roleMenuMapper) {
+        this.menuMapper = menuMapper;
+        this.roleMenuMapper = roleMenuMapper;
+    }
 
     @Override
     public List<MenuTreeDTO> getMenuTree() {
@@ -36,9 +48,24 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     
     @Override
     public List<MenuTreeDTO> getMenuTreeByUserId(Long userId) {
-        // TODO: 根据用户权限过滤菜单
-        // 暂时返回所有菜单
-        return getMenuTree();
+        Long tenantId = TenantContextHolder.getTenantId();
+        
+        // 查询用户拥有的菜单权限
+        List<SysMenu> userMenus = menuMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .select(SYS_MENU.ALL_COLUMNS)
+                        .from(SYS_MENU)
+                        .leftJoin(SYS_ROLE_MENU).on(SYS_MENU.ID.eq(SYS_ROLE_MENU.MENU_ID))
+                        .leftJoin(SYS_USER_ROLE).on(SYS_ROLE_MENU.ROLE_ID.eq(SYS_USER_ROLE.ROLE_ID))
+                        .where(SYS_USER_ROLE.USER_ID.eq(userId))
+                        .and(SYS_MENU.TENANT_ID.eq(tenantId))
+                        .and(SYS_MENU.STATUS.eq(1))
+                        .and(SYS_MENU.DELETED.eq(0))
+                        .orderBy(SYS_MENU.ORDER_NUM.asc())
+        );
+        
+        // 转换为树形结构
+        return buildMenuTree(userMenus, 0L);
     }
     
     @Override
@@ -105,7 +132,14 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         }
         
         // 检查是否有角色关联
-        // TODO: 检查 sys_role_menu 表
+        Long roleMenuCount = roleMenuMapper.selectCountByQuery(
+                QueryWrapper.create()
+                        .where(SYS_ROLE_MENU.MENU_ID.eq(menuId))
+        );
+        
+        if (roleMenuCount > 0) {
+            throw new RuntimeException("该菜单已分配给角色，无法删除");
+        }
         
         return removeById(menuId);
     }

@@ -8,7 +8,7 @@ public class SysMenuTableDef extends TableDef {
 
     /**
      * 菜单实体
- 
+
  @author emp
      */
     public static final SysMenuTableDef SYS_MENU = new SysMenuTableDef();
@@ -71,6 +71,8 @@ public class SysMenuTableDef extends TableDef {
     public final QueryColumn PARENT_ID = new QueryColumn(this, "parent_id");
 
     public final QueryColumn UPDATE_BY = new QueryColumn(this, "update_by");
+
+    public final QueryColumn TENANT_ID = new QueryColumn(this, "tenant_id");
 
     /**
      * 组件路径
