@@ -5,9 +5,12 @@ import com.ldjt.emp.common.core.domain.Result;
 import com.ldjt.emp.dto.mail.MailConfigDTO;
 import com.ldjt.emp.dto.mail.MailSendDTO;
 import com.ldjt.emp.dto.mail.MailTemplateDTO;
+import com.ldjt.emp.dto.mail.MailTemplateSendDTO;
 import com.ldjt.emp.entity.SysMailConfig;
+import com.ldjt.emp.entity.SysMailTemplate;
 import com.ldjt.emp.service.SysMailConfigService;
 import com.ldjt.emp.service.SysMailService;
+import com.ldjt.emp.service.SysMailTemplateService;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +19,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 邮件管理控制器
  *
@@ -23,12 +28,13 @@ import org.springframework.web.bind.annotation.*;
  */
 @Tag(name = "邮件管理")
 @RestController
-@RequestMapping("/api/mail")
+@RequestMapping("/system/mail")
 @RequiredArgsConstructor
 public class SysMailController {
 
     private final SysMailService mailService;
     private final SysMailConfigService mailConfigService;
+    private final SysMailTemplateService mailTemplateService;
 
     @Operation(summary = "发送邮件")
     @PostMapping("/send")
@@ -40,8 +46,8 @@ public class SysMailController {
     @Operation(summary = "使用模板发送邮件")
     @PostMapping("/send/template")
     @SaCheckPermission("system:mail:send")
-    public Result<Boolean> sendTemplateMail(@Valid @RequestBody MailTemplateDTO mailTemplateDTO) {
-        return Result.success(mailService.sendTemplateMail(mailTemplateDTO));
+    public Result<Boolean> sendTemplateMail(@Valid @RequestBody MailTemplateSendDTO mailTemplateSendDTO) {
+        return Result.success(mailService.sendTemplateMail(mailTemplateSendDTO));
     }
 
     @Operation(summary = "异步发送邮件")
@@ -105,5 +111,51 @@ public class SysMailController {
     @SaCheckPermission("system:mail:config:query")
     public Result<SysMailConfig> getConfig(@Parameter(description = "配置ID") @PathVariable Long id) {
         return Result.success(mailConfigService.getById(id));
+    }
+
+    @Operation(summary = "分页查询邮件模板")
+    @GetMapping("/template/page")
+    @SaCheckPermission("system:mail:template:query")
+    public Result<Page<SysMailTemplate>> pageTemplate(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNumber,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize,
+            @Parameter(description = "模板名称") @RequestParam(required = false) String templateName) {
+        Page<SysMailTemplate> page = Page.of(pageNumber, pageSize);
+        return Result.success(mailTemplateService.pageTemplate(page, templateName));
+    }
+
+    @Operation(summary = "查询邮件模板详情")
+    @GetMapping("/template/{id}")
+    @SaCheckPermission("system:mail:template:query")
+    public Result<SysMailTemplate> getTemplate(@Parameter(description = "模板ID") @PathVariable Long id) {
+        return Result.success(mailTemplateService.getById(id));
+    }
+
+    @Operation(summary = "查询所有邮件模板")
+    @GetMapping("/template/list")
+    @SaCheckPermission("system:mail:template:query")
+    public Result<List<SysMailTemplate>> listTemplate() {
+        return Result.success(mailTemplateService.list());
+    }
+
+    @Operation(summary = "创建邮件模板")
+    @PostMapping("/template")
+    @SaCheckPermission("system:mail:template:create")
+    public Result<Boolean> createTemplate(@Valid @RequestBody MailTemplateDTO mailTemplateDTO) {
+        return Result.success(mailTemplateService.createTemplate(mailTemplateDTO));
+    }
+
+    @Operation(summary = "更新邮件模板")
+    @PutMapping("/template")
+    @SaCheckPermission("system:mail:template:update")
+    public Result<Boolean> updateTemplate(@Valid @RequestBody MailTemplateDTO mailTemplateDTO) {
+        return Result.success(mailTemplateService.updateTemplate(mailTemplateDTO));
+    }
+
+    @Operation(summary = "删除邮件模板")
+    @DeleteMapping("/template/{id}")
+    @SaCheckPermission("system:mail:template:delete")
+    public Result<Boolean> deleteTemplate(@Parameter(description = "模板ID") @PathVariable Long id) {
+        return Result.success(mailTemplateService.deleteTemplate(id));
     }
 }

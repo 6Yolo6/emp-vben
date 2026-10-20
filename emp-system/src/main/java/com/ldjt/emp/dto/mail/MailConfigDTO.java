@@ -40,12 +40,12 @@ public class MailConfigDTO {
     @Schema(description = "发件人名称")
     private String fromName;
 
-    @Schema(description = "是否启用SSL")
-    private Boolean sslEnable = true;
+    @Schema(description = "是否启用SSL：0=禁用 1=启用")
+    private Integer sslEnable = 1;
 
-    @Schema(description = "是否默认配置")
-    private Boolean isDefault = false;
+    @Schema(description = "是否默认配置：0=否 1=是")
+    private Integer isDefault = 0;
 
-    @Schema(description = "状态(0停用 1正常)")
+    @Schema(description = "状态：0=停用 1=正常")
     private Integer status = 1;
 }

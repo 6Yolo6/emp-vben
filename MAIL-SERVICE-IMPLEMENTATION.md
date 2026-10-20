@@ -191,37 +191,76 @@ psql -U postgres -d emp_db -f rear-emp-platform/sql/sys_mail.sql
 
 ## 相关文件
 
-### 实体类
+### 后端文件
+
+#### 实体类
 - `SysMailConfig.java` - 邮件配置实体
 - `SysMailLog.java` - 邮件日志实体
 - `SysMailTemplate.java` - 邮件模板实体
 
-### Mapper
+#### Mapper
 - `SysMailConfigMapper.java`
 - `SysMailLogMapper.java`
 - `SysMailTemplateMapper.java`
 
-### Service
+#### Service
 - `SysMailService.java` - 邮件服务接口
 - `SysMailServiceImpl.java` - 邮件服务实现
 - `SysMailConfigService.java` - 邮件配置服务接口
 - `SysMailConfigServiceImpl.java` - 邮件配置服务实现
 
-### Controller
+#### Controller
 - `SysMailController.java` - 邮件管理控制器
 
-### DTO
+#### DTO
 - `MailSendDTO.java` - 邮件发送DTO
 - `MailTemplateDTO.java` - 模板邮件DTO
 - `MailConfigDTO.java` - 邮件配置DTO
 
-### SQL
+#### SQL
 - `sys_mail.sql` - 数据库表创建和初始化脚本
+
+### 前端文件
+
+#### API接口
+- `emp-vben-admin/apps/web-antd/src/api/sys/mail.ts` - 邮件API接口定义
+
+#### 页面组件
+- `emp-vben-admin/apps/web-antd/src/views/system/mail-config/index.vue` - 邮件配置管理页面
+- `emp-vben-admin/apps/web-antd/src/views/system/mail-config/components/MailConfigFormModal.vue` - 邮件配置表单
+- `emp-vben-admin/apps/web-antd/src/views/system/mail-config/components/TestMailModal.vue` - 测试邮件弹窗
+- `emp-vben-admin/apps/web-antd/src/views/system/mail-send/index.vue` - 邮件发送页面
+
+#### 路由配置
+- `emp-vben-admin/apps/web-antd/src/router/routes/modules/system.ts` - 系统路由配置（已添加邮件路由）
+
+### 前端功能特性
+
+1. **邮件配置管理页面**
+   - VxeTable表格展示配置列表
+   - 支持新增、编辑、删除配置
+   - 支持测试邮件配置
+   - 显示SSL状态、默认配置标识
+   - 实时状态切换
+
+2. **邮件发送页面**
+   - 标签页切换（普通邮件/模板邮件）
+   - 支持多收件人、抄送人
+   - HTML/纯文本格式选择
+   - 模板变量JSON输入
+   - 表单验证和错误提示
+
+3. **组件特性**
+   - 使用Vben Form构建表单
+   - 使用Vben Modal管理弹窗
+   - 使用Ant Design Vue组件
+   - 响应式布局设计
+   - 完整的错误处理
 
 ## 完成状态
 
-✅ 邮件配置管理
-✅ 邮件发送功能
+✅ 邮件配置管理（后端+前端）
+✅ 邮件发送功能（后端+前端）
 ✅ 邮件模板支持
 ✅ 异步发送
 ✅ 重试机制
@@ -229,5 +268,34 @@ psql -U postgres -d emp_db -f rear-emp-platform/sql/sys_mail.sql
 ✅ API接口
 ✅ 数据库表设计
 ✅ 默认配置和示例模板
+✅ 编译错误修复
+✅ 前端页面开发
 
 任务23已完成！
+
+## 前端页面说明
+
+### 1. 邮件配置管理 (/system/mail-config)
+- 表格展示所有邮件配置
+- 支持新增、编辑、删除配置
+- 支持测试邮件发送
+- 显示配置状态和默认配置标识
+
+### 2. 发送邮件 (/system/mail-send)
+- 普通邮件发送：支持HTML/纯文本格式
+- 模板邮件发送：使用预定义模板和变量
+- 支持多收件人和抄送
+- 表单验证和错误提示
+
+### 访问路径
+- 邮件配置：http://localhost:5555/system/mail-config
+- 发送邮件：http://localhost:5555/system/mail-send
+
+## 修复记录
+
+### 2026-03-26
+- 修复了`SysMailConfigServiceImpl`中`QueryWrapper.set()`方法使用错误
+- 改用实体对象更新方式，符合MyBatis-Flex的API规范
+- 修复了`SysMailServiceImpl.doSendMail()`方法的异常声明
+- 将`throws MessagingException`改为`throws Exception`以捕获所有可能的异常
+- 所有代码已通过编译检查，无任何错误

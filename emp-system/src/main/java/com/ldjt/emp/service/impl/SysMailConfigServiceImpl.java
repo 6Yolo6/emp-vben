@@ -41,8 +41,11 @@ public class SysMailConfigServiceImpl extends ServiceImpl<SysMailConfigMapper, S
         }
 
         // 如果设置为默认配置，取消其他默认配置
-        if (mailConfigDTO.getIsDefault()) {
-            update(QueryWrapper.create().set(SYS_MAIL_CONFIG.IS_DEFAULT, false));
+        if (mailConfigDTO.getIsDefault() != null && mailConfigDTO.getIsDefault() == 1) {
+            // 将所有配置的isDefault设置为0
+            SysMailConfig updateEntity = new SysMailConfig();
+            updateEntity.setIsDefault(0);
+            update(updateEntity, QueryWrapper.create());
         }
 
         // 创建配置
@@ -68,10 +71,11 @@ public class SysMailConfigServiceImpl extends ServiceImpl<SysMailConfigMapper, S
         }
 
         // 如果设置为默认配置，取消其他默认配置
-        if (mailConfigDTO.getIsDefault()) {
-            update(QueryWrapper.create()
-                    .set(SYS_MAIL_CONFIG.IS_DEFAULT, false)
-                    .where(SYS_MAIL_CONFIG.ID.ne(mailConfigDTO.getId())));
+        if (mailConfigDTO.getIsDefault() != null && mailConfigDTO.getIsDefault() == 1) {
+            // 将其他配置的isDefault设置为0
+            SysMailConfig updateEntity = new SysMailConfig();
+            updateEntity.setIsDefault(0);
+            update(updateEntity, QueryWrapper.create().where(SYS_MAIL_CONFIG.ID.ne(mailConfigDTO.getId())));
         }
 
         // 更新配置
@@ -88,7 +92,7 @@ public class SysMailConfigServiceImpl extends ServiceImpl<SysMailConfigMapper, S
         }
 
         // 不允许删除默认配置
-        if (config.getIsDefault()) {
+        if (config.getIsDefault() != null && config.getIsDefault() == 1) {
             throw new BusinessException("不允许删除默认配置");
         }
 

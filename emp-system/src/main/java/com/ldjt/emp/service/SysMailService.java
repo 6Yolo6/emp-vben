@@ -1,7 +1,7 @@
 package com.ldjt.emp.service;
 
 import com.ldjt.emp.dto.mail.MailSendDTO;
-import com.ldjt.emp.dto.mail.MailTemplateDTO;
+import com.ldjt.emp.dto.mail.MailTemplateSendDTO;
 
 /**
  * 邮件服务接口
@@ -21,10 +21,10 @@ public interface SysMailService {
     /**
      * 使用模板发送邮件
      *
-     * @param mailTemplateDTO 模板邮件DTO
+     * @param mailTemplateSendDTO 模板邮件发送DTO
      * @return 是否发送成功
      */
-    Boolean sendTemplateMail(MailTemplateDTO mailTemplateDTO);
+    Boolean sendTemplateMail(MailTemplateSendDTO mailTemplateSendDTO);
 
     /**
      * 异步发送邮件

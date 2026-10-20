@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.ldjt.emp.common.exception.BusinessException;
 import com.ldjt.emp.dto.mail.MailSendDTO;
 import com.ldjt.emp.dto.mail.MailTemplateDTO;
+import com.ldjt.emp.dto.mail.MailTemplateSendDTO;
 import com.ldjt.emp.entity.SysMailConfig;
 import com.ldjt.emp.entity.SysMailLog;
 import com.ldjt.emp.entity.SysMailTemplate;
@@ -79,11 +80,11 @@ public class SysMailServiceImpl implements SysMailService {
     }
 
     @Override
-    public Boolean sendTemplateMail(MailTemplateDTO mailTemplateDTO) {
+    public Boolean sendTemplateMail(MailTemplateSendDTO mailTemplateSendDTO) {
         // 查询模板
         SysMailTemplate template = mailTemplateMapper.selectOneByQuery(
                 QueryWrapper.create()
-                        .where(SYS_MAIL_TEMPLATE.TEMPLATE_CODE.eq(mailTemplateDTO.getTemplateCode()))
+                        .where(SYS_MAIL_TEMPLATE.TEMPLATE_CODE.eq(mailTemplateSendDTO.getTemplateCode()))
                         .and(SYS_MAIL_TEMPLATE.STATUS.eq(1))
         );
 
@@ -92,18 +93,18 @@ public class SysMailServiceImpl implements SysMailService {
         }
 
         // 渲染模板
-        String content = renderTemplate(template.getContent(), mailTemplateDTO.getVariables());
+        String content = renderTemplate(template.getContent(), mailTemplateSendDTO.getVariables());
 
         // 构建邮件发送DTO
         MailSendDTO mailSendDTO = new MailSendDTO();
-        mailSendDTO.setToEmails(mailTemplateDTO.getToEmails());
-        mailSendDTO.setCcEmails(mailTemplateDTO.getCcEmails());
-        mailSendDTO.setBccEmails(mailTemplateDTO.getBccEmails());
+        mailSendDTO.setToEmails(mailTemplateSendDTO.getToEmails());
+        mailSendDTO.setCcEmails(mailTemplateSendDTO.getCcEmails());
+        mailSendDTO.setBccEmails(mailTemplateSendDTO.getBccEmails());
         mailSendDTO.setSubject(template.getSubject());
         mailSendDTO.setContent(content);
         mailSendDTO.setIsHtml(template.getTemplateType() == 1);
-        mailSendDTO.setAttachments(mailTemplateDTO.getAttachments());
-        mailSendDTO.setConfigId(mailTemplateDTO.getConfigId());
+        mailSendDTO.setAttachments(mailTemplateSendDTO.getAttachments());
+        mailSendDTO.setConfigId(mailTemplateSendDTO.getConfigId());
 
         return sendMail(mailSendDTO);
     }
@@ -182,7 +183,7 @@ public class SysMailServiceImpl implements SysMailService {
             // 获取默认配置
             config = mailConfigMapper.selectOneByQuery(
                     QueryWrapper.create()
-                            .where(SYS_MAIL_CONFIG.IS_DEFAULT.eq(true))
+                            .where(SYS_MAIL_CONFIG.IS_DEFAULT.eq(1))
                             .and(SYS_MAIL_CONFIG.STATUS.eq(1))
             );
         }
@@ -220,7 +221,7 @@ public class SysMailServiceImpl implements SysMailService {
     /**
      * 执行邮件发送
      */
-    private void doSendMail(SysMailConfig config, MailSendDTO mailSendDTO) throws MessagingException {
+    private void doSendMail(SysMailConfig config, MailSendDTO mailSendDTO) throws Exception {
         // 创建邮件发送器
         JavaMailSenderImpl mailSender = createMailSender(config);
 
@@ -281,7 +282,7 @@ public class SysMailServiceImpl implements SysMailService {
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.timeout", "25000");
 
-        if (config.getSslEnable()) {
+        if (config.getSslEnable() != null && config.getSslEnable() == 1) {
             props.put("mail.smtp.ssl.enable", "true");
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             props.put("mail.smtp.socketFactory.port", config.getSmtpPort());
